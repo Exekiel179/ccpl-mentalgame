@@ -77,18 +77,21 @@ func _ready() -> void:
 
 	_mic_label = Label.new()
 	_mic_label.text = "[SPACE] 语音答题"
+	_mic_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_mic_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_mic_label.add_theme_font_size_override("font_size", 18)
-	_mic_label.add_theme_color_override("font_color", Color(0.86, 0.9, 1.0))
-	_mic_label.add_theme_color_override("font_outline_color", Color(0.03, 0.06, 0.14))
-	_mic_label.add_theme_constant_override("outline_size", 4)
+	_mic_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
+	_mic_label.add_theme_color_override("font_outline_color", Color(1.0, 1.0, 1.0, 0.5))
+	_mic_label.add_theme_constant_override("outline_size", 2)
 	_mic_label.position = Vector2(500, 678)
 	_voice_feedback = Label.new()
 	_voice_feedback.text = ""
 	_voice_feedback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_voice_feedback.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_voice_feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_voice_feedback.add_theme_font_size_override("font_size", 48)
-	_voice_feedback.add_theme_color_override("font_color", Color.WHITE)
-	_voice_feedback.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0))
+	_voice_feedback.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15)) # Deep Warm Brown
+	_voice_feedback.add_theme_color_override("font_outline_color", Color(1.0, 1.0, 1.0, 0.8))
 	_voice_feedback.add_theme_constant_override("outline_size", 4)
 	_voice_feedback.size = Vector2(400, 80)
 	_voice_feedback.position = Vector2(440, 280)
@@ -139,7 +142,7 @@ func _setup_normal_level() -> void:
 	_game_active = true
 	_pause_menu = PauseMenuScript.new()
 	add_child(_pause_menu)
-	AmbientMusic.start()
+	AmbientMusic.start(AmbientMusic.Track.PROCEDURAL)
 
 func _process(delta: float) -> void:
 	if not _game_active:
@@ -272,14 +275,17 @@ func _on_card_timed_out(_card: SentenceCard) -> void:
 
 func _on_health_changed(current: int, max_health: int) -> void:
 	health_bar.value = current
-	health_label.text = "\u5fc3\u7406\u5065\u5eb7: %d" % current
+	health_label.text = "🌿 身心能量: %d" % current
 	var ratio := float(current) / float(max_health)
 	var stylebox := health_bar.get_theme_stylebox("fill") as StyleBoxFlat
 	if stylebox:
-		stylebox.bg_color = Color(1.0 - ratio, ratio * 0.8, 0.1)
+		# Soft green to Terra Cotta (0.8, 0.6, 0.5) transition
+		var low_health_color := Color(0.8, 0.6, 0.5) # Terra Cotta
+		var high_health_color := Color(0.52, 0.64, 0.54) # Sage Green
+		stylebox.bg_color = low_health_color.lerp(high_health_color, ratio)
 
 func _update_score() -> void:
-	score_label.text = "\u5206\u6570: %d" % _score
+	score_label.text = "✨ 积极成长: %d" % _score
 	_pop_tween(score_label)
 
 func _update_combo() -> void:
@@ -363,34 +369,40 @@ func _answer_nearest_card(category: String) -> void:
 
 func _style_hud() -> void:
 	# Style HUD labels
+	for lbl in [health_label, score_label, scenario_label, countdown_label, combo_label]:
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
 	health_label.add_theme_font_size_override("font_size", 16)
-	health_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
+	health_label.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15)) # Deep Warm Brown
 	score_label.add_theme_font_size_override("font_size", 16)
-	score_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	score_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 	scenario_label.add_theme_font_size_override("font_size", 16)
-	scenario_label.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	scenario_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 	countdown_label.add_theme_font_size_override("font_size", 18)
-	countdown_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	countdown_label.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15))
 	combo_label.add_theme_font_size_override("font_size", 22)
-	combo_label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+	combo_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.6)) # Gentle Coral Pink
 	# Style answer buttons
 	for btn in [btn_fact, btn_thought]:
 		var b: Button = btn as Button
 		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.1, 0.15, 0.3, 0.8)
-		sb.border_color = Color(0.4, 0.6, 1.0, 0.5)
-		sb.set_border_width_all(2)
-		sb.set_corner_radius_all(6)
-		sb.content_margin_left = 16.0
-		sb.content_margin_right = 16.0
+		sb.bg_color = Color(1.0, 0.98, 0.95, 0.9) # Warm White
+		sb.border_color = Color(0.85, 0.80, 0.75, 0.6)
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(12)
+		sb.content_margin_left = 20.0
+		sb.content_margin_right = 20.0
 		sb.content_margin_top = 8.0
 		sb.content_margin_bottom = 8.0
 		b.add_theme_stylebox_override("normal", sb)
 		var sb_h := sb.duplicate() as StyleBoxFlat
-		sb_h.bg_color = Color(0.2, 0.3, 0.5, 0.9)
+		sb_h.bg_color = sb.bg_color.lightened(0.1) # Lightened hover
+		sb_h.shadow_color = Color(0.4, 0.3, 0.2, 0.08) # Shadow alpha <= 0.1
+		sb_h.shadow_size = 6
 		b.add_theme_stylebox_override("hover", sb_h)
 		b.add_theme_font_size_override("font_size", 16)
-		b.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+		b.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15)) # Deep Warm Brown
 
 func _highlight_nearest_card() -> void:
 	var player_pos := player.global_position
@@ -417,7 +429,7 @@ func _on_voice_failed(reason: String) -> void:
 	if _voice_feedback:
 		_voice_feedback.visible = true
 		_voice_feedback.text = "❌ " + reason
-		_voice_feedback.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		_voice_feedback.add_theme_color_override("font_color", Color(0.75, 0.5, 0.5)) # Muted Rose
 		_voice_feedback.scale = Vector2(1.0, 1.0)
 		_voice_feedback.modulate = Color.WHITE
 		var tw2 := create_tween()
@@ -436,10 +448,10 @@ func _update_mic_label() -> void:
 	_mic_label.modulate = Color.WHITE
 	if _voice_service.is_recording():
 		_mic_label.text = "🎤 录音中... 说“事实”或“想法”"
-		_mic_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		_mic_label.add_theme_color_override("font_color", Color(0.75, 0.5, 0.5)) # Muted Rose
 	else:
 		_mic_label.text = "[SPACE] 语音答题"
-		_mic_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		_mic_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 
 func _show_voice_feedback(category: String) -> void:
 	if _voice_feedback == null:
@@ -472,12 +484,12 @@ func _style_hud_panels() -> void:
 	_top_bar_backdrop.size = Vector2(1264, 54)
 	_top_bar_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var top_style := StyleBoxFlat.new()
-	top_style.bg_color = Color(0.05, 0.09, 0.18, 0.76)
-	top_style.border_color = Color(0.36, 0.58, 0.95, 0.58)
-	top_style.set_border_width_all(2)
-	top_style.set_corner_radius_all(14)
-	top_style.shadow_color = Color(0.08, 0.24, 0.55, 0.22)
-	top_style.shadow_size = 8
+	top_style.bg_color = Color(1.0, 0.98, 0.96, 0.85) # Warm Glass
+	top_style.border_color = Color(0.90, 0.85, 0.80, 0.5)
+	top_style.set_border_width_all(1)
+	top_style.set_corner_radius_all(18)
+	top_style.shadow_color = Color(0.3, 0.2, 0.1, 0.07) # Alpha <= 0.1
+	top_style.shadow_size = 12
 	_top_bar_backdrop.add_theme_stylebox_override("panel", top_style)
 	hud.add_child(_top_bar_backdrop)
 	hud.move_child(_top_bar_backdrop, 0)
@@ -487,9 +499,8 @@ func _style_hud_panels() -> void:
 	_bottom_bar_backdrop.size = Vector2(536, 102)
 	_bottom_bar_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bottom_style := top_style.duplicate() as StyleBoxFlat
-	bottom_style.bg_color = Color(0.04, 0.07, 0.16, 0.82)
-	bottom_style.border_color = Color(0.44, 0.66, 1.0, 0.62)
-	bottom_style.shadow_color = Color(0.10, 0.34, 0.70, 0.25)
+	bottom_style.bg_color = Color(1.0, 0.98, 0.95, 0.92)
+	bottom_style.shadow_size = 15
 	_bottom_bar_backdrop.add_theme_stylebox_override("panel", bottom_style)
 	hud.add_child(_bottom_bar_backdrop)
 	hud.move_child(_bottom_bar_backdrop, 1)
@@ -516,9 +527,7 @@ func _shake_camera(intensity: float, duration: float) -> void:
 	tw.tween_property(cam, "offset", Vector2.ZERO, step_dur)
 
 func _damage_flash() -> void:
-	player.modulate = Color(1.0, 0.3, 0.3)
-	var tw := create_tween()
-	tw.tween_property(player, "modulate", Color.WHITE, 0.25)
+	pass  # removed — player.modulate tinted the viewport red via Camera2D child
 
 func _spawn_pickups() -> void:
 	var maze_node := get_node_or_null("Maze")

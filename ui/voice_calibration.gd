@@ -48,7 +48,7 @@ func _build_ui() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	_bg = ColorRect.new()
-	_bg.color = Color(0.03, 0.05, 0.14, 1.0)
+	_bg.color = Color(0.98, 0.96, 0.92, 1.0)
 	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_bg)
 
@@ -57,27 +57,27 @@ func _build_ui() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(540, 0)
+	_panel.custom_minimum_size = Vector2(560, 0)
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.06, 0.10, 0.24, 0.94)
-	sb.border_color = Color(0.40, 0.62, 1.0, 0.60)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(22)
-	sb.shadow_color = Color(0.10, 0.26, 0.72, 0.36)
-	sb.shadow_size = 20
+	sb.bg_color = Color(1.0, 1.0, 1.0, 0.8)
+	sb.border_color = Color(0.9, 0.85, 0.8, 0.5)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(32)
+	sb.shadow_color = Color(0.3, 0.2, 0.1, 0.06)
+	sb.shadow_size = 25
 	_panel.add_theme_stylebox_override("panel", sb)
 	center.add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 48)
 	margin.add_theme_constant_override("margin_right", 48)
-	margin.add_theme_constant_override("margin_top", 36)
-	margin.add_theme_constant_override("margin_bottom", 36)
+	margin.add_theme_constant_override("margin_top", 40)
+	margin.add_theme_constant_override("margin_bottom", 40)
 	_panel.add_child(margin)
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 18)
+	vbox.add_theme_constant_override("separation", 20)
 	margin.add_child(vbox)
 
 	# Title
@@ -85,9 +85,7 @@ func _build_ui() -> void:
 	_title_label.text = "🎤  语音校准"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 32)
-	_title_label.add_theme_color_override("font_color", Color(0.88, 0.93, 1.0))
-	_title_label.add_theme_color_override("font_outline_color", Color(0.04, 0.08, 0.22))
-	_title_label.add_theme_constant_override("outline_size", 5)
+	_title_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))
 	vbox.add_child(_title_label)
 
 	# Instruction
@@ -96,7 +94,7 @@ func _build_ui() -> void:
 	_instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_instruction_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_instruction_label.add_theme_font_size_override("font_size", 16)
-	_instruction_label.add_theme_color_override("font_color", Color(0.65, 0.78, 1.0))
+	_instruction_label.add_theme_color_override("font_color", Color(0.55, 0.5, 0.45))
 	vbox.add_child(_instruction_label)
 
 	# Big word display
@@ -104,23 +102,21 @@ func _build_ui() -> void:
 	_word_label.text = ""
 	_word_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_word_label.add_theme_font_size_override("font_size", 64)
-	_word_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.3))
-	_word_label.add_theme_color_override("font_outline_color", Color(0.25, 0.18, 0.02))
-	_word_label.add_theme_constant_override("outline_size", 6)
+	_word_label.add_theme_color_override("font_color", Color(0.52, 0.64, 0.54)) # Sage Green
 	vbox.add_child(_word_label)
 
 	# Progress dots
 	_dots_container = HBoxContainer.new()
 	_dots_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	_dots_container.add_theme_constant_override("separation", 8)
+	_dots_container.add_theme_constant_override("separation", 10)
 	vbox.add_child(_dots_container)
 
 	# Progress text
 	_progress_label = Label.new()
 	_progress_label.text = ""
 	_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_progress_label.add_theme_font_size_override("font_size", 15)
-	_progress_label.add_theme_color_override("font_color", Color(0.60, 0.72, 0.92))
+	_progress_label.add_theme_font_size_override("font_size", 16)
+	_progress_label.add_theme_color_override("font_color", Color(0.65, 0.6, 0.55))
 	vbox.add_child(_progress_label)
 
 	# Status / feedback
@@ -130,12 +126,12 @@ func _build_ui() -> void:
 	_status_label.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(_status_label)
 
-	# Record button (tap once — auto-stops after RECORD_MAX)
-	_record_btn = _make_btn("🎤  点击录音 / 按空格", Color(0.80, 0.28, 0.28), 380, 52, 18)
+	# Record button
+	_record_btn = _make_btn("🎤  点击录音 / 按空格", Color(0.92, 0.6, 0.45), 380, 52, 18)
 	_record_btn.visible = false
 	vbox.add_child(_record_btn)
 
-	# Timer bar shown during recording
+	# Timer bar
 	_timer_bar = ProgressBar.new()
 	_timer_bar.custom_minimum_size = Vector2(380, 12)
 	_timer_bar.max_value = 1.0
@@ -143,23 +139,23 @@ func _build_ui() -> void:
 	_timer_bar.show_percentage = false
 	_timer_bar.visible = false
 	var bar_bg := StyleBoxFlat.new()
-	bar_bg.bg_color = Color(0.15, 0.18, 0.30)
+	bar_bg.bg_color = Color(0.9, 0.85, 0.8)
 	bar_bg.set_corner_radius_all(6)
 	var bar_fill := StyleBoxFlat.new()
-	bar_fill.bg_color = Color(0.95, 0.35, 0.35)
+	bar_fill.bg_color = Color(0.92, 0.6, 0.45) # Coral
 	bar_fill.set_corner_radius_all(6)
 	_timer_bar.add_theme_stylebox_override("background", bar_bg)
 	_timer_bar.add_theme_stylebox_override("fill", bar_fill)
 	vbox.add_child(_timer_bar)
 
-	# action_btn (has-model screen: recalibrate / done)
-	_action_btn = _make_btn("", Color(0.28, 0.72, 0.48), 280, 46, 17)
+	# action_btn
+	_action_btn = _make_btn("", Color(0.52, 0.64, 0.54), 280, 46, 17)
 	_action_btn.visible = false
 	vbox.add_child(_action_btn)
 
 	# Separator
 	var sep_style := StyleBoxFlat.new()
-	sep_style.bg_color = Color(0.35, 0.55, 1.0, 0.22)
+	sep_style.bg_color = Color(0.85, 0.8, 0.75, 0.3)
 	sep_style.content_margin_top = 1.0
 	sep_style.content_margin_bottom = 1.0
 	var sep := HSeparator.new()
@@ -167,7 +163,7 @@ func _build_ui() -> void:
 	vbox.add_child(sep)
 
 	# Skip button
-	_skip_btn = _make_btn("⏭  跳过，直接开始游戏", Color(0.55, 0.55, 0.65), 280, 40, 15)
+	_skip_btn = _make_btn("⏭  跳过，直接开始游戏", Color(0.85, 0.82, 0.78), 280, 40, 15)
 	_skip_btn.pressed.connect(_on_skip)
 	vbox.add_child(_skip_btn)
 
@@ -177,21 +173,19 @@ func _make_btn(label_text: String, accent: Color,
 	btn.text = label_text
 	btn.custom_minimum_size = Vector2(min_w, min_h)
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(accent.r * 0.18, accent.g * 0.18, accent.b * 0.18, 0.88)
-	sb.border_color = Color(accent.r * 0.85, accent.g * 0.85, accent.b * 0.85, 0.55)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
+	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.9)
+	sb.set_corner_radius_all(14)
 	sb.content_margin_left = 18.0
 	sb.content_margin_right = 18.0
-	sb.content_margin_top = 9.0
-	sb.content_margin_bottom = 9.0
+	sb.content_margin_top = 10.0
+	sb.content_margin_bottom = 10.0
 	btn.add_theme_stylebox_override("normal", sb)
 	var sb_h := sb.duplicate() as StyleBoxFlat
-	sb_h.bg_color = Color(accent.r * 0.30, accent.g * 0.30, accent.b * 0.30, 0.96)
-	sb_h.border_color = Color(accent.r, accent.g, accent.b, 0.85)
+	sb_h.bg_color = Color(accent.r * 1.05, accent.g * 1.05, accent.b * 1.05, 1.0)
+	sb_h.shadow_size = 8
 	btn.add_theme_stylebox_override("hover", sb_h)
 	btn.add_theme_font_size_override("font_size", font_sz)
-	btn.add_theme_color_override("font_color", Color(0.90, 0.94, 1.0))
+	btn.add_theme_color_override("font_color", Color.WHITE if accent.v < 0.8 else Color(0.3, 0.25, 0.2))
 	return btn
 
 # ─────────────────────────────────────────────────────────────────────────────

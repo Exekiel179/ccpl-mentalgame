@@ -72,38 +72,43 @@ func setup_near_player(data: Dictionary, player_world_pos: Vector2) -> void:
 
 func _ready() -> void:
 	label_text.text = sentence_dict.get("text", "")
+	label_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	feedback_label.visible = false
+	feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	timer_bar.max_value = TIME_LIMIT
 	timer_bar.value = TIME_LIMIT
-	modulate = Color(0.55, 0.85, 1.0, 0.85)
+	modulate = Color(1.0, 0.95, 0.85, 0.9) # Warm Cream
 	# Polished panel style
 	var panel := get_node_or_null("Panel") as Panel
 	if panel:
 		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.08, 0.12, 0.28, 0.88)
-		sb.border_color = Color(0.4, 0.7, 1.0, 0.5)
-		sb.set_border_width_all(2)
-		sb.set_corner_radius_all(10)
-		sb.shadow_color = Color(0.2, 0.5, 1.0, 0.25)
-		sb.shadow_size = 6
+		sb.bg_color = Color(1.0, 0.98, 0.96, 0.92) # Warm White
+		sb.border_color = Color(0.9, 0.85, 0.75, 0.6)
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(16)
+		sb.shadow_color = Color(0.4, 0.3, 0.2, 0.08) # Alpha <= 0.1
+		sb.shadow_size = 8
 		panel.add_theme_stylebox_override("panel", sb)
 	# Better label style
 	label_text.add_theme_font_size_override("font_size", 18)
-	label_text.add_theme_color_override("font_color", Color(0.92, 0.95, 1.0))
+	label_text.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15)) # Deep Warm Brown
 	feedback_label.add_theme_font_size_override("font_size", 14)
 	# Tutorial: show answer and "say it" prompt
 	if tutorial_mode:
 		timer_bar.visible = false
 		_answer_label = Label.new()
 		var cat: String = sentence_dict.get("category", "")
-		var cat_cn: String = "\u4e8b\u5b9e" if cat == "fact" else "\u60f3\u6cd5"
-		_answer_label.text = "\U0001f3a4 \u8bf7\u8bf4\uff1a\u201c%s\u201d" % cat_cn
+		var cat_cn: String = "事实" if cat == "fact" else "想法"
+		_answer_label.text = "🎤 请说：“%s”" % cat_cn
 		_answer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_answer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_answer_label.add_theme_font_size_override("font_size", 16)
 		if cat == "fact":
-			_answer_label.add_theme_color_override("font_color", Color(0.3, 0.9, 1.0))
+			_answer_label.add_theme_color_override("font_color", Color(0.35, 0.55, 0.40)) # Sage
 		else:
-			_answer_label.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
+			_answer_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.6)) # Gentle Coral Pink
 		_answer_label.position = Vector2(0, CARD_H - 6)
 		_answer_label.size = Vector2(CARD_W, 24)
 		add_child(_answer_label)
@@ -118,7 +123,7 @@ func _process(delta: float) -> void:
 		_spine_pos += _velocity * delta * 0.3
 		var perp2 := Vector2(-_velocity.y, _velocity.x).normalized()
 		position = _spine_pos + perp2 * sin(_phase) * 6.0
-		modulate = Color(0.7, 0.9, 1.0, 0.9 + sin(_phase) * 0.1)
+		modulate = Color(1.0, 0.98, 0.9, 0.95 + sin(_phase) * 0.05)
 		return
 
 	# Home toward player (dynamic destination)
@@ -135,11 +140,11 @@ func _process(delta: float) -> void:
 	var perp := Vector2(-_velocity.y, _velocity.x).normalized()
 	position = _spine_pos + perp * sin(_phase) * 10.0
 
-	# Pulsing glow — nearest card is bright gold, others are blue ghost
+	# Pulsing glow — nearest card is warm orange, others are cream
 	if is_nearest:
-		modulate = Color(1.0, 0.92, 0.4, 0.88 + sin(_phase * 1.5) * 0.12)
+		modulate = Color(1.0, 0.85, 0.6, 0.95 + sin(_phase * 1.5) * 0.05)
 	else:
-		modulate = Color(0.55, 0.85, 1.0, 0.65 + sin(_phase * 0.9) * 0.25)
+		modulate = Color(1.0, 0.95, 0.85, 0.75 + sin(_phase * 0.9) * 0.1)
 
 	# Countdown
 	_time_left -= delta
@@ -147,7 +152,10 @@ func _process(delta: float) -> void:
 	var ratio := _time_left / TIME_LIMIT
 	var bar_stylebox := timer_bar.get_theme_stylebox("fill") as StyleBoxFlat
 	if bar_stylebox:
-		bar_stylebox.bg_color = Color(1.0 - ratio, ratio * 0.8, 0.1)
+		# Soft green to Terra Cotta (0.8, 0.6, 0.5) transition
+		var low_time_color := Color(0.8, 0.6, 0.5) # Terra Cotta
+		var high_time_color := Color(0.52, 0.64, 0.54) # Sage Green
+		bar_stylebox.bg_color = low_time_color.lerp(high_time_color, ratio)
 
 	if _time_left <= 0.0:
 		_on_timeout()
@@ -168,9 +176,9 @@ func on_hit_player() -> void:
 		return
 	_answered = true
 	feedback_label.visible = true
-	feedback_label.text = "\u2620 \u78b0\u5230\u4e86\uff01"
-	feedback_label.modulate = Color(1.0, 0.3, 0.3)
-	_spawn_particles(Color(1.0, 0.6, 0.2), 15)
+	feedback_label.text = "碰到了，深呼吸..."
+	feedback_label.modulate = Color(0.75, 0.5, 0.5) # Muted Rose
+	_spawn_particles(Color(0.8, 0.6, 0.5), 15)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(queue_free)
@@ -190,15 +198,15 @@ func _show_feedback(correct: bool) -> void:
 	if correct:
 		var distortion: String = sentence_dict.get("distortion", "")
 		if distortion != "":
-			feedback_label.text = "\u2713 \u6b63\u786e\uff01[" + distortion + "]"
+			feedback_label.text = "✓ 正确！[" + distortion + "]"
 		else:
-			feedback_label.text = "\u2713 \u6b63\u786e\uff01"
-		feedback_label.modulate = Color.GREEN
-		_spawn_particles(Color(0.3, 1.0, 0.4), 20)
+			feedback_label.text = "✓ 正确！"
+		feedback_label.modulate = Color(0.35, 0.65, 0.45) # Sage Green
+		_spawn_particles(Color(0.5, 0.8, 0.6), 20)
 	else:
-		feedback_label.text = "\u2717 " + sentence_dict.get("explanation", "\u518d\u60f3\u60f3")
-		feedback_label.modulate = Color(1.0, 0.4, 0.4)
-		_spawn_particles(Color(1.0, 0.3, 0.3), 12)
+		feedback_label.text = "✗ " + sentence_dict.get("explanation", "再想想")
+		feedback_label.modulate = Color(0.8, 0.6, 0.6) # Gentle Coral Pink
+		_spawn_particles(Color(0.8, 0.6, 0.5), 12)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 1.2).set_delay(1.0)
 	tween.tween_callback(queue_free)

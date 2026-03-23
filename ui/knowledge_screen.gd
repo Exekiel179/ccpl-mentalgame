@@ -31,10 +31,55 @@ func _get_pages() -> Array:
 	]
 
 func _ready() -> void:
+	_style_scene()
 	btn_next.pressed.connect(_next_page)
 	btn_back.pressed.connect(_prev_page)
 	btn_start.pressed.connect(func(): GameManager.start_game(GameManager.current_scenario))
 	_refresh()
+
+func _style_scene() -> void:
+	# Full screen warm background
+	var bg := ColorRect.new()
+	bg.color = Color(0.98, 0.96, 0.92, 1.0)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+	move_child(bg, 0)
+	
+	# Glass panel for content
+	var panel := get_node_or_null("CenterContainer/VBoxContainer/Panel") as Panel
+	if panel:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(1.0, 1.0, 1.0, 0.8)
+		sb.set_corner_radius_all(24)
+		sb.shadow_color = Color(0.3, 0.2, 0.1, 0.05)
+		sb.shadow_size = 20
+		panel.add_theme_stylebox_override("panel", sb)
+	
+	title_label.add_theme_color_override("font_color", Color(0.35, 0.3, 0.25))
+	title_label.add_theme_font_size_override("font_size", 32)
+	
+	body_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35))
+	body_label.add_theme_font_size_override("font_size", 20)
+	
+	_style_btn(btn_next, Color(0.52, 0.64, 0.54))
+	_style_btn(btn_back, Color(0.85, 0.8, 0.7))
+	_style_btn(btn_start, Color(0.92, 0.6, 0.45))
+	
+	page_indicator.add_theme_color_override("font_color", Color(0.6, 0.55, 0.5))
+
+func _style_btn(btn: Button, accent: Color) -> void:
+	btn.custom_minimum_size = Vector2(160, 48)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.9)
+	sb.set_corner_radius_all(14)
+	sb.content_margin_left = 20.0
+	sb.content_margin_right = 20.0
+	btn.add_theme_stylebox_override("normal", sb)
+	var sb_h := sb.duplicate() as StyleBoxFlat
+	sb_h.bg_color = Color(accent.r * 1.05, accent.g * 1.05, accent.b * 1.05, 1.0)
+	btn.add_theme_stylebox_override("hover", sb_h)
+	btn.add_theme_font_size_override("font_size", 18)
+	btn.add_theme_color_override("font_color", Color.WHITE if accent.v < 0.8 else Color(0.3, 0.25, 0.2))
 
 func _next_page() -> void:
 	_page_index = mini(_page_index + 1, _get_pages().size() - 1)

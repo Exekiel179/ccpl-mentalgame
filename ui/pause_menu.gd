@@ -9,7 +9,7 @@ func _ready() -> void:
 	visible = false
 
 	var bg := ColorRect.new()
-	bg.color = Color(0.0, 0.03, 0.08, 0.72)
+	bg.color = Color(1.0, 0.98, 0.95, 0.45) # Warm semi-transparent white
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
@@ -18,14 +18,14 @@ func _ready() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(340, 0)
+	_panel.custom_minimum_size = Vector2(360, 0)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.11, 0.24, 0.94)
-	style.border_color = Color(0.38, 0.60, 1.0, 0.65)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(20)
-	style.shadow_color = Color(0.10, 0.28, 0.70, 0.38)
-	style.shadow_size = 18
+	style.bg_color = Color(1.0, 1.0, 1.0, 0.9) # Clean Glass
+	style.border_color = Color(0.9, 0.85, 0.8, 0.5)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(32)
+	style.shadow_color = Color(0.3, 0.2, 0.1, 0.07)
+	style.shadow_size = 22
 	_panel.add_theme_stylebox_override("panel", style)
 	center.add_child(_panel)
 
@@ -42,54 +42,53 @@ func _ready() -> void:
 	margin.add_child(vbox)
 
 	var title := Label.new()
-	title.text = "⏸  已暂停"
+	title.text = "🌿  稍作休息"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.add_theme_font_size_override("font_size", 30)
-	title.add_theme_color_override("font_color", Color(0.88, 0.93, 1.0))
-	title.add_theme_color_override("font_outline_color", Color(0.04, 0.08, 0.20))
-	title.add_theme_constant_override("outline_size", 4)
+	title.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15))
 	vbox.add_child(title)
 
 	var sep_style := StyleBoxFlat.new()
-	sep_style.bg_color = Color(0.35, 0.58, 1.0, 0.28)
+	sep_style.bg_color = Color(0.85, 0.80, 0.70, 0.4)
 	sep_style.content_margin_top = 1.0
 	sep_style.content_margin_bottom = 1.0
 	var sep := HSeparator.new()
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
-	var btn_resume := _make_btn("▶  继续游戏", Color(0.28, 0.80, 0.48))
+	var btn_resume := _make_btn("▶  继续成长", Color(0.52, 0.64, 0.54))
 	btn_resume.pressed.connect(_on_resume)
 	vbox.add_child(btn_resume)
 
-	var btn_knowledge := _make_btn("📖  知识库", Color(0.48, 0.65, 1.0))
+	var btn_knowledge := _make_btn("📖  心灵知识", Color(0.92, 0.65, 0.50))
 	btn_knowledge.pressed.connect(_on_knowledge)
 	vbox.add_child(btn_knowledge)
 
-	var btn_quit := _make_btn("🏠  返回主菜单", Color(0.90, 0.40, 0.40))
+	var btn_quit := _make_btn("🏠  返回主菜单", Color(0.85, 0.80, 0.75))
 	btn_quit.pressed.connect(_on_quit)
 	vbox.add_child(btn_quit)
 
 func _make_btn(label_text: String, accent: Color) -> Button:
 	var btn := Button.new()
 	btn.text = label_text
-	btn.custom_minimum_size = Vector2(240, 44)
+	btn.custom_minimum_size = Vector2(240, 48)
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(accent.r * 0.16, accent.g * 0.16, accent.b * 0.16, 0.88)
-	sb.border_color = Color(accent.r * 0.8, accent.g * 0.8, accent.b * 0.8, 0.55)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(8)
-	sb.content_margin_left = 16.0
-	sb.content_margin_right = 16.0
+	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.9)
+	sb.set_corner_radius_all(14)
+	sb.content_margin_left = 20.0
+	sb.content_margin_right = 20.0
 	sb.content_margin_top = 10.0
 	sb.content_margin_bottom = 10.0
+	sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.08) # Alpha <= 0.1
+	sb.shadow_size = 4
 	btn.add_theme_stylebox_override("normal", sb)
 	var sb_h := sb.duplicate() as StyleBoxFlat
-	sb_h.bg_color = Color(accent.r * 0.28, accent.g * 0.28, accent.b * 0.28, 0.96)
-	sb_h.border_color = Color(accent.r, accent.g, accent.b, 0.85)
+	sb_h.bg_color = sb.bg_color.lightened(0.1) # Lightened hover
+	sb_h.shadow_size = 8
 	btn.add_theme_stylebox_override("hover", sb_h)
-	btn.add_theme_font_size_override("font_size", 17)
-	btn.add_theme_color_override("font_color", Color(0.90, 0.95, 1.0))
+	btn.add_theme_font_size_override("font_size", 18)
+	btn.add_theme_color_override("font_color", Color.WHITE if accent.v < 0.8 else Color(0.25, 0.2, 0.15))
 	return btn
 
 func toggle() -> void:

@@ -144,4 +144,6 @@ static func get_thoughts_for_scenario(scenario: String) -> Array[String]:
 	return result
 
 static func get_all_skill_keys() -> Array[String]:
-	return get_skill_cards().keys()
+	var keys: Array[String] = []
+	keys.assign(get_skill_cards().keys())
+	return keys

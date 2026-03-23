@@ -27,11 +27,11 @@ func _ready() -> void:
 	_setup_reset_button()
 	_update_model_status()
 
-	AmbientMusic.start()
+	AmbientMusic.start(AmbientMusic.Track.MENU)
 	gemini_service.image_ready.connect(_on_bg_ready)
-	gemini_service.generate_background("主菜单")
+	gemini_service.generate_background("温暖治愈的心理咨询室，有阳光洒进窗户，极简风格，温馨的木质家具，绿植，电影感光效")
 	gemini_service_char.image_ready.connect(_on_char_ready)
-	gemini_service_char.generate_background("立绘")
+	gemini_service_char.generate_background("温柔亲切的心理咨询师立绘，穿着柔软的针织衫，温和的微笑，高画质，二次元风格")
 
 ## Reconstructs the menu layout with proper styling and section headers.
 func _rebuild_menu() -> void:
@@ -42,24 +42,29 @@ func _rebuild_menu() -> void:
 	# ── Fix title / subtitle (scene hardcodes black) ──────────────────────
 	var title_lbl := vbox.get_node_or_null("TitleLabel") as Label
 	if title_lbl:
-		title_lbl.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
-		title_lbl.add_theme_color_override("font_outline_color", Color(0.04, 0.08, 0.24))
-		title_lbl.add_theme_constant_override("outline_size", 8)
-		title_lbl.add_theme_font_size_override("font_size", 48)
+		title_lbl.add_theme_color_override("font_color", Color(0.25, 0.2, 0.15)) # Deep Warm Brown
+		title_lbl.remove_theme_color_override("font_outline_color")
+		title_lbl.add_theme_font_size_override("font_size", 52)
+		title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	var sub_lbl := vbox.get_node_or_null("SubtitleLabel") as Label
 	if sub_lbl:
-		sub_lbl.add_theme_color_override("font_color", Color(0.60, 0.78, 1.0))
-		sub_lbl.add_theme_font_size_override("font_size", 17)
+		sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
+		sub_lbl.add_theme_font_size_override("font_size", 18)
+		sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sub_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# ── Section header: 选择场景 ────────────────────────────────────────────
 	var scenario_lbl := vbox.get_node_or_null("ScenarioLabel") as Label
 	if scenario_lbl:
-		scenario_lbl.text = "🎮  选择场景"
-		scenario_lbl.add_theme_font_size_override("font_size", 15)
-		scenario_lbl.add_theme_color_override("font_color", Color(0.50, 0.70, 1.0))
-		scenario_lbl.add_theme_color_override("font_outline_color", Color(0.04, 0.08, 0.24))
-		scenario_lbl.add_theme_constant_override("outline_size", 3)
+		scenario_lbl.text = "🌿  选择治愈场景"
+		scenario_lbl.add_theme_font_size_override("font_size", 16)
+		scenario_lbl.add_theme_color_override("font_color", Color(0.40, 0.45, 0.35)) # Sage Green
+		scenario_lbl.remove_theme_color_override("font_outline_color")
+		scenario_lbl.remove_theme_constant_override("outline_size")
+		scenario_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		scenario_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# ── Replace plain Divider with a section header row ────────────────────
 	var divider := vbox.get_node_or_null("Divider")
@@ -69,45 +74,47 @@ func _rebuild_menu() -> void:
 		vbox.remove_child(divider)
 		divider.queue_free()
 
-	var sep := _make_sep(Color(0.40, 0.58, 1.0, 0.28))
+	var sep := _make_sep(Color(0.85, 0.80, 0.70, 0.40)) # Warm separator
 	vbox.add_child(sep)
 	vbox.move_child(sep, insert_idx)
 
 	var training_hdr := Label.new()
-	training_hdr.text = "🧠  训练入口"
+	training_hdr.text = "🌱  自我成长训练"
 	training_hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	training_hdr.add_theme_font_size_override("font_size", 15)
-	training_hdr.add_theme_color_override("font_color", Color(0.78, 0.55, 1.0))
-	training_hdr.add_theme_color_override("font_outline_color", Color(0.10, 0.04, 0.22))
-	training_hdr.add_theme_constant_override("outline_size", 3)
+	training_hdr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	training_hdr.add_theme_font_size_override("font_size", 16)
+	training_hdr.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 	vbox.add_child(training_hdr)
 	vbox.move_child(training_hdr, insert_idx + 1)
 
 	# BtnKnowledge is now at insert_idx + 2
-	btn_knowledge.text = "📖  认知重构训练"
+	btn_knowledge.text = "📖  探索认知重构"
 
 	# ── Style all buttons ──────────────────────────────────────────────────
-	_style_btn(btn_academic, Color(0.30, 0.58, 1.0))
-	_style_btn(btn_family,   Color(0.30, 0.58, 1.0))
-	_style_btn(btn_social,   Color(0.30, 0.58, 1.0))
-	_style_btn(btn_knowledge, Color(0.70, 0.45, 1.0), 200, 46, 17)
+	var primary_color := Color(0.52, 0.64, 0.54) # Sage Green
+	var secondary_color := Color(0.92, 0.60, 0.45) # Warm Coral/Orange
+	
+	_style_btn(btn_academic, primary_color)
+	_style_btn(btn_family,   primary_color)
+	_style_btn(btn_social,   primary_color)
+	_style_btn(btn_knowledge, secondary_color, 240, 48, 18)
 
 	# ── Wrap VBoxContainer in a glass card ─────────────────────────────────
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 36)
-	margin.add_theme_constant_override("margin_right", 36)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
+	margin.add_theme_constant_override("margin_left", 48)
+	margin.add_theme_constant_override("margin_right", 48)
+	margin.add_theme_constant_override("margin_top", 40)
+	margin.add_theme_constant_override("margin_bottom", 40)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(560, 0)
+	panel.custom_minimum_size = Vector2(580, 0)
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.09, 0.22, 0.90)
-	sb.border_color = Color(0.35, 0.58, 1.0, 0.55)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(22)
-	sb.shadow_color = Color(0.10, 0.26, 0.72, 0.34)
-	sb.shadow_size = 22
+	sb.bg_color = Color(1.0, 0.98, 0.95, 0.85) # Semi-transparent Warm White
+	sb.border_color = Color(0.90, 0.85, 0.80, 0.50)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(32)
+	sb.shadow_color = Color(0.3, 0.2, 0.1, 0.08) # Soft warm shadow transparency <= 0.1
+	sb.shadow_size = 30
 	panel.add_theme_stylebox_override("panel", sb)
 
 	var center := vbox.get_parent()
@@ -137,86 +144,93 @@ func _style_btn(btn: Button, accent: Color,
 		min_w: int = 240, min_h: int = 44, font_sz: int = 18) -> void:
 	btn.custom_minimum_size = Vector2(min_w, min_h)
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(accent.r * 0.16, accent.g * 0.16, accent.b * 0.16, 0.88)
-	sb.border_color = Color(accent.r * 0.82, accent.g * 0.82, accent.b * 0.82, 0.55)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 20.0
-	sb.content_margin_right = 20.0
-	sb.content_margin_top = 9.0
-	sb.content_margin_bottom = 9.0
+	# Soft, slightly desaturated background
+	sb.bg_color = Color(accent.r, accent.g, accent.b, 0.9)
+	sb.set_corner_radius_all(14)
+	sb.content_margin_left = 24.0
+	sb.content_margin_right = 24.0
+	sb.content_margin_top = 10.0
+	sb.content_margin_bottom = 10.0
+	# Remove harsh borders, use subtle shadow instead
+	sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.08) # Transparency <= 0.1
+	sb.shadow_size = 4
 	btn.add_theme_stylebox_override("normal", sb)
+	
 	var sb_h := sb.duplicate() as StyleBoxFlat
-	sb_h.bg_color = Color(accent.r * 0.28, accent.g * 0.28, accent.b * 0.28, 0.96)
-	sb_h.border_color = Color(accent.r, accent.g, accent.b, 0.88)
+	sb_h.bg_color = sb.bg_color.lightened(0.1) # Uniform lightened hover
+	sb_h.shadow_size = 8
 	btn.add_theme_stylebox_override("hover", sb_h)
+	
 	var sb_p := sb.duplicate() as StyleBoxFlat
-	sb_p.bg_color = Color(accent.r * 0.38, accent.g * 0.38, accent.b * 0.38, 1.0)
+	sb_p.bg_color = Color(accent.r * 0.9, accent.g * 0.9, accent.b * 0.9, 1.0)
+	sb_p.shadow_size = 2
 	btn.add_theme_stylebox_override("pressed", sb_p)
+	
 	btn.add_theme_font_size_override("font_size", font_sz)
-	btn.add_theme_color_override("font_color", Color(0.88, 0.93, 1.0))
+	btn.add_theme_color_override("font_color", Color.WHITE)
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
 
 func _setup_card_mode_section() -> void:
 	var parent := btn_academic.get_parent()
 	if parent == null:
 		return
-	var sep := _make_sep(Color(0.55, 0.35, 1.0, 0.30))
+	var sep := _make_sep(Color(0.85, 0.75, 0.65, 0.35))
 	parent.add_child(sep)
 
 	var card_hdr := Label.new()
-	card_hdr.text = "♥  卡牌对战模式"
+	card_hdr.text = "🧡  卡牌心灵对战"
 	card_hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card_hdr.add_theme_font_size_override("font_size", 15)
-	card_hdr.add_theme_color_override("font_color", Color(0.85, 0.55, 1.0))
-	card_hdr.add_theme_color_override("font_outline_color", Color(0.10, 0.04, 0.22))
-	card_hdr.add_theme_constant_override("outline_size", 3)
+	card_hdr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	card_hdr.add_theme_font_size_override("font_size", 16)
+	card_hdr.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 	parent.add_child(card_hdr)
 
 	var hbox := HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 10)
+	hbox.add_theme_constant_override("separation", 12)
 	parent.add_child(hbox)
 
 	var scenarios: Array = ["学业压力", "家庭矛盾", "社交压力"]
 	var emojis: Array    = ["📚", "🏠", "👥"]
+	var card_accent := Color(0.65, 0.55, 0.75) # Muted Lavender for card mode
 	for i in 3:
 		var btn := Button.new()
 		btn.text = "%s %s" % [emojis[i], scenarios[i]]
 		var sc: String = scenarios[i]
 		btn.pressed.connect(func(): GameManager.start_card_game(sc))
 		hbox.add_child(btn)
-		_style_btn(btn, Color(0.65, 0.35, 1.0), 120, 38, 14)
+		_style_btn(btn, card_accent, 124, 40, 15)
 		_card_mode_btns.append(btn)
 
 func _setup_difficulty_buttons() -> void:
 	var parent := btn_academic.get_parent()
 	if parent == null:
 		return
-	var sep := _make_sep(Color(0.35, 0.55, 0.95, 0.22))
+	var sep := _make_sep(Color(0.85, 0.75, 0.65, 0.30))
 	parent.add_child(sep)
 
 	var diff_label := Label.new()
-	diff_label.text = "⚙  难度"
+	diff_label.text = "调节挑战节奏"
 	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	diff_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	diff_label.add_theme_font_size_override("font_size", 14)
-	diff_label.add_theme_color_override("font_color", Color(0.62, 0.75, 0.95))
+	diff_label.add_theme_color_override("font_color", Color(0.45, 0.4, 0.35)) # Muted Taupe
 	parent.add_child(diff_label)
 
 	var hbox := HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 10)
+	hbox.add_theme_constant_override("separation", 12)
 	parent.add_child(hbox)
 
-	var names: Array = ["简单", "普通", "困难"]
-	var accents: Array = [Color(0.30, 0.80, 0.50), Color(0.30, 0.58, 1.0), Color(0.95, 0.38, 0.38)]
+	var names: Array = ["轻柔", "适中", "深刻"]
+	var accents: Array = [Color(0.65, 0.75, 0.60), Color(0.65, 0.70, 0.80), Color(0.75, 0.5, 0.5)] # Muted Rose for 'Hard'
 	for i in 3:
 		var btn := Button.new()
 		btn.text = names[i] as String
 		var idx: int = i
 		btn.pressed.connect(func(): _set_difficulty(idx))
 		hbox.add_child(btn)
-		_style_btn(btn, accents[i] as Color, 88, 36, 14)
+		_style_btn(btn, accents[i] as Color, 96, 38, 15)
 		if i == GameManager.difficulty:
 			btn.disabled = true
 
@@ -235,6 +249,7 @@ func _setup_reset_button() -> void:
 
 	_status_label = Label.new()
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.add_theme_font_size_override("font_size", 13)
 	parent.add_child(_status_label)
 
@@ -243,10 +258,10 @@ func _update_model_status() -> void:
 		return
 	if GameManager.has_voice_calibration():
 		_status_label.text = "✅ 已有语音模型，可直接游戏"
-		_status_label.add_theme_color_override("font_color", Color(0.45, 0.90, 0.60))
+		_status_label.add_theme_color_override("font_color", Color(0.35, 0.65, 0.45)) # Soft Green
 	else:
 		_status_label.text = "⚠ 未检测到语音模型，建议先训练"
-		_status_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.38))
+		_status_label.add_theme_color_override("font_color", Color(0.75, 0.5, 0.5)) # Muted Rose
 
 func _reset_voice_model() -> void:
 	var voice_service := VoiceServiceScript.new()
@@ -270,5 +285,21 @@ func _on_bg_ready(texture: Texture2D) -> void:
 
 func _on_char_ready(texture: Texture2D) -> void:
 	char_sprite.texture = texture
+	char_sprite.modulate = Color(1, 1, 1, 0)
+	
+	# Position at bottom right
+	var vp := get_viewport_rect().size
+	var tex_size := texture.get_size()
+	
+	# Scale to fit height (about 85% of screen)
+	var scale_factor := (vp.y * 0.85) / tex_size.y
+	char_sprite.scale = Vector2(scale_factor, scale_factor)
+	char_sprite.position = Vector2(vp.x * 0.75, vp.y - (tex_size.y * scale_factor * 0.5))
+	
 	var tween := create_tween()
-	tween.tween_property(char_sprite, "modulate:a", 1.0, 0.8)
+	tween.set_parallel(true)
+	tween.tween_property(char_sprite, "modulate:a", 1.0, 1.0)
+	# Slight slide-in from right
+	var target_pos := char_sprite.position
+	char_sprite.position.x += 30
+	tween.tween_property(char_sprite, "position:x", target_pos.x, 0.8).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)

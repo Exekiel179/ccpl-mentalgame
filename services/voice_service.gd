@@ -163,12 +163,13 @@ func _on_collect_sample(frames: PackedVector2Array) -> void:
 		print("[VoiceService] Verify: say \"\u4e8b\u5b9e\" (%d times)" % VERIFY_PASSES)
 
 func _on_verify_sample(frames: PackedVector2Array) -> void:
+	# Always add as training data — the user IS saying the expected word,
+	# so every verify sample is valid regardless of classification result.
+	# FIFO limit (MAX_TEMPLATES_PER_CLASS=6) prevents imbalance.
+	_classifier.add_template(_verify_word, frames)
 	var res: Dictionary = _classifier.classify(frames)
 	var got: String = res.get("result", "")
 	var conf: float = res.get("confidence", 0.0)
-	# NOTE: templates are NOT modified during verification — only pure collected
-	# samples are used. Adding failed/ambiguous verify samples contaminated the
-	# model (caused fact=6 thought=17 imbalance and cross-class confusion).
 	var n_fact: int = _classifier.get_fact_count()
 	var n_thought: int = _classifier.get_thought_count()
 	var expected_cn: String = "\u4e8b\u5b9e" if _verify_word == "fact" else "\u60f3\u6cd5"

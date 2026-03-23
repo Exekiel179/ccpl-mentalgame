@@ -1,5 +1,5 @@
-## AmbientMusic — procedural ambient music via AudioStreamGenerator.
-## Call start() to begin, stop() to end. Randomizes between several calm presets.
+## AmbientMusic — procedural ambient music via AudioStreamGenerator,
+## OR plays MP3 background tracks.
 extends Node
 
 const SAMPLE_RATE := 44100.0
@@ -35,40 +35,69 @@ const PRESETS: Array[Dictionary] = [
 	},
 ]
 
+enum Track { PROCEDURAL, MENU, CARD_GAME }
+
 var _player: AudioStreamPlayer
 var _playback: AudioStreamGeneratorPlayback
+var _gen_stream: AudioStreamGenerator
 var _phase1: float = 0.0
 var _phase2: float = 0.0
 var _current_freq: float = 130.81
 var _note_idx: int = 0
 var _note_timer: float = 0.0
 var _playing: bool = false
+var _is_procedural: bool = true
 var _freqs: Array = []
 var _harmonic_ratio: float = 0.3
 var _gain: float = 0.12
 var _drift_min: float = 1.4
 var _drift_max: float = 2.0
 
+var _tracks: Dictionary = {
+	Track.MENU: preload("res://assets/music/Chrono_Drift.mp3"),
+	Track.CARD_GAME: preload("res://assets/music/Harmonic_Drift.mp3")
+}
+
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
-	var gen := AudioStreamGenerator.new()
-	gen.mix_rate = SAMPLE_RATE
-	gen.buffer_length = 0.3
-	_player.stream = gen
+	_gen_stream = AudioStreamGenerator.new()
+	_gen_stream.mix_rate = SAMPLE_RATE
+	_gen_stream.buffer_length = 0.3
 	_player.volume_db = VOLUME_DB
 	add_child(_player)
+	
+	for track in _tracks.values():
+		if track is AudioStreamMP3:
+			track.loop = true
 
 func is_playing() -> bool:
 	return _playing
 
-func start() -> void:
+var _last_track: Track = Track.PROCEDURAL
+
+func start(track_type: int = -1) -> void:
+	if track_type == -1:
+		track_type = _last_track
+	else:
+		_last_track = track_type
+	
 	if _playing:
-		return
-	_pick_preset()
+		stop()
+	
+	if track_type == Track.PROCEDURAL:
+		_is_procedural = true
+		_player.stream = _gen_stream
+		_pick_preset()
+		_player.play()
+		_playback = _player.get_stream_playback()
+		_note_timer = 0.0
+	else:
+		_is_procedural = false
+		_player.stream = _tracks.get(track_type)
+		_player.play()
+		_playback = null
+	
 	_playing = true
-	_player.play()
-	_playback = _player.get_stream_playback()
-	_note_timer = 0.0
 
 func stop() -> void:
 	_playing = false
@@ -88,7 +117,7 @@ func _pick_preset() -> void:
 	_phase2 = randf()
 
 func _process(delta: float) -> void:
-	if not _playing or _playback == null:
+	if not _playing or not _is_procedural or _playback == null:
 		return
 	_note_timer -= delta
 	if _note_timer <= 0.0:

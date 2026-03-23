@@ -8,9 +8,9 @@ const CogData = preload("res://data/cog_card_data.gd")
 # ── Constants ─────────────────────────────────────────────────────────────────
 const CogCard := preload("res://game/card_game/cog_card.gd")
 const MAX_HEALTH: int   = 100
-const HAND_SIZE:  int   = 5
-const THOUGHTS_PER_TURN: int = 2
-const MAX_TURNS:  int   = 8
+const HAND_SIZE:  int   = 4
+const THOUGHTS_PER_TURN: int = 3
+const MAX_TURNS:  int   = 10
 
 # ── State ─────────────────────────────────────────────────────────────────────
 var _health:       int  = MAX_HEALTH
@@ -62,21 +62,17 @@ func _build_scene() -> void:
 	_vfs_layer.add_to_group("card_vfs_layer")
 	add_child(_vfs_layer)
 
-	# Card layer — card nodes' actual home
+	# Build panels FIRST so card layer renders on top (panels would eat mouse events otherwise)
+	_build_challenge_zone()
+	_build_hand_zone()
+
+	# Card layer — must be added AFTER panels so cards are above them and receive mouse events
 	_card_layer = Control.new()
 	_card_layer.name = "CardLayer"
 	_card_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_card_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_card_layer)
 
-	# Anchor layer — invisible position markers cards float toward
-	_anchor_layer = Control.new()
-	_anchor_layer.name = "AnchorLayer"
-	_anchor_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_anchor_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_anchor_layer)
-
-	_build_challenge_zone()
-	_build_hand_zone()
 	_build_hud()
 
 	# Gemini background service
@@ -281,7 +277,7 @@ func _start_game() -> void:
 	_deal_hand()
 	_spawn_thoughts()
 	_game_active = true
-	AmbientMusic.start()
+	AmbientMusic.start(AmbientMusic.Track.CARD_GAME)
 
 func _update_hud() -> void:
 	_health_bar.value = _health
@@ -369,9 +365,20 @@ func _on_card_played(skill_card, zone: Node) -> void:
 		if skill_card.can_counter(t):
 			target_thought = t
 			break
-	# If no perfect match, use first thought card (partial counter)
+
 	if target_thought == null:
-		target_thought = _thought_cards[0]
+		# Wrong match — skill card wasted, thought remains, take damage
+		_health = maxi(_health - 15, 0)
+		_show_feedback("❌ 技能不匹配！技能牌浪费，-15 心理值", Color(1.0, 0.35, 0.35))
+		SfxManager.play_wrong()
+		_hand_cards.erase(skill_card)
+		var tw_bad: Tween = skill_card.play_destroy_tween()
+		await tw_bad.finished
+		skill_card.queue_free()
+		_update_hud()
+		if _health <= 0:
+			_on_game_over()
+		return
 
 	_resolve_counter(skill_card, target_thought)
 
