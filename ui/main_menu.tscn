@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://c1i1jvrlghdnd"]
+
+[ext_resource type="Script" uid="uid://dojfqt8aqou7u" path="res://ui/main_menu.gd" id="1_t7e0r"]
+[ext_resource type="Script" uid="uid://brbui5n7g64b3" path="res://services/gemini_service.gd" id="2_0dkrt"]
+
+[node name="MainMenu" type="Control" unique_id=1760689295]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_t7e0r")
+
+[node name="BG" type="ColorRect" parent="." unique_id=1875121978]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.06, 0.16, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1303372902]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=436288074]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=877760397]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 52
+text = "心理健康训练场"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=2132392385]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "认知重构 · 遆彦自己 · 走向平衡"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer" unique_id=544967972]
+layout_mode = 2
+
+[node name="ScenarioLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1861644181]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "选择场景："
+horizontal_alignment = 1
+
+[node name="BtnAcademic" type="Button" parent="CenterContainer/VBoxContainer" unique_id=584282270]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "📚 学业压力"
+
+[node name="BtnFamily" type="Button" parent="CenterContainer/VBoxContainer" unique_id=2015555647]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🏠 家庭矛盾"
+
+[node name="BtnSocial" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1457365299]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "👥 社交压力"
+
+[node name="Divider" type="HSeparator" parent="CenterContainer/VBoxContainer" unique_id=2096670143]
+layout_mode = 2
+
+[node name="BtnKnowledge" type="Button" parent="CenterContainer/VBoxContainer" unique_id=288731760]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "📖 认知重构是什么？"
+
+[node name="BGSprite" type="Sprite2D" parent="." unique_id=1978943729]
+unique_name_in_owner = true
+z_index = -1
+
+[node name="GeminiService" type="Node" parent="." unique_id=1542065593]
+script = ExtResource("2_0dkrt")
+
+[node name="CharSprite" type="Sprite2D" parent="." unique_id=923097489]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 1)
+scale = Vector2(1e-05, 1e-05)
+
+[node name="GeminiServiceChar" type="Node" parent="." unique_id=797214098]
+script = ExtResource("2_0dkrt")

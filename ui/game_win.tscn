@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://dsm1eh6rg46ek"]
+
+[ext_resource type="Script" uid="uid://bfaswmeavacg4" path="res://ui/game_win.gd" id="1_k6rkg"]
+
+[node name="GameWin" type="Control" unique_id=497290350]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_k6rkg")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1405819906]
+layout_mode = 0
+color = Color(0.05, 0.15, 0.1, 1)
+
+[node name="CenterContainer" type="VBoxContainer" parent="." unique_id=701120621]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = 200.0
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer" unique_id=442514444]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 48
+text = "恭喜通关！"
+horizontal_alignment = 1
+
+[node name="TimeBonusLabel" type="Label" parent="CenterContainer" unique_id=2044780889]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "时间奖励: +0"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CenterContainer" unique_id=389524870]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "最终得分: 0"
+horizontal_alignment = 1
+
+[node name="HighScoreLabel" type="Label" parent="CenterContainer" unique_id=932808759]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 20
+text = "最高分: 0"
+horizontal_alignment = 1
+
+[node name="BtnRetry" type="Button" parent="CenterContainer" unique_id=1919951086]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "再来一次"
+
+[node name="BtnMenu" type="Button" parent="CenterContainer" unique_id=74297331]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "返回主菜单"

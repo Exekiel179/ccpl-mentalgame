@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+	"godot-mcp-server": {
+	  "command": "F:\\Projects\\game_new\\start_godot_mcp.bat",
+	  "args": [],
+	  "cwd": "F:\\Projects\\game_new",
+	  "env": {}
+	}
+  }
+}

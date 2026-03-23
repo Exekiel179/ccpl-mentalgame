@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://oha4hoibybay"]
+
+[ext_resource type="Script" uid="uid://c23n8v5bn6brt" path="res://ui/hud.gd" id="1_rbyyf"]
+
+[node name="HUD" type="CanvasLayer" unique_id=399702556]
+script = ExtResource("1_rbyyf")
+
+[node name="TopBar" type="HBoxContainer" parent="." unique_id=936825489]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 8.0
+offset_right = -16.0
+offset_bottom = 48.0
+theme_override_constants/separation = 20
+
+[node name="HealthLabel" type="Label" parent="TopBar" unique_id=1060879222]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "心理健康: 100"
+vertical_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="TopBar" unique_id=1409423894]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+
+[node name="ScoreLabel" type="Label" parent="TopBar" unique_id=835657718]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 18
+text = "分数: 0"
+vertical_alignment = 1
+
+[node name="ComboLabel" type="Label" parent="." unique_id=1296088661]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 56.0
+offset_right = 100.0
+offset_bottom = 90.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "连击 x2!"
+horizontal_alignment = 1
+
+[node name="HintLabel" type="Label" parent="." unique_id=1743203794]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 1)
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -44.0
+offset_right = 150.0
+offset_bottom = -8.0
+theme_override_font_sizes/font_size = 18
+text = "F = 事实   J = 想法"
+horizontal_alignment = 1

@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://df7tldxyki5xl"]
+
+[ext_resource type="Script" uid="uid://d2f3rjsnl28pv" path="res://ui/game_over.gd" id="1_oo8kp"]
+
+[node name="GameOver" type="Control" unique_id=599766055]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_oo8kp")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1122163123]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=602336645]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1981797932]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1580937763]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "游戏结束"
+horizontal_alignment = 1
+
+[node name="FinalScoreLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1810444495]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "最终分数: 0"
+horizontal_alignment = 1
+
+[node name="HighScoreLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1761916112]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 22
+text = "最高分: 0"
+horizontal_alignment = 1
+
+[node name="BtnRetry" type="Button" parent="CenterContainer/VBoxContainer" unique_id=893677046]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "再来一局"
+
+[node name="BtnMenu" type="Button" parent="CenterContainer/VBoxContainer" unique_id=623190016]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "返回主菜单"

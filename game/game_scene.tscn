@@ -1,0 +1,144 @@
+[gd_scene format=3 uid="uid://del8isjdgqc0y"]
+
+[ext_resource type="Script" uid="uid://bc6eu52kitbnu" path="res://game/game_controller.gd" id="1_2rju1"]
+[ext_resource type="Script" uid="uid://dqta7gptm5qr7" path="res://components/health_component.gd" id="2_aa1sf"]
+[ext_resource type="Script" uid="uid://brbui5n7g64b3" path="res://services/gemini_service.gd" id="3_svcr2"]
+[ext_resource type="Script" uid="uid://hetaje52myox" path="res://game/maze_builder.gd" id="4_aa1sf"]
+[ext_resource type="Script" uid="uid://cu13mrn73ak0b" path="res://game/player.gd" id="5_svcr2"]
+[ext_resource type="Script" uid="uid://ohbkf4gvpkoa" path="res://game/fog_layer.gd" id="6_tkpq3"]
+
+[node name="GameScene" type="Node2D" unique_id=519739060]
+script = ExtResource("1_2rju1")
+
+[node name="BackgroundSprite" type="Sprite2D" parent="." unique_id=1687586570]
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1666625997]
+script = ExtResource("2_aa1sf")
+
+[node name="GeminiService" type="Node" parent="." unique_id=102908856]
+script = ExtResource("3_svcr2")
+
+[node name="SpawnTimer" type="Timer" parent="." unique_id=559333181]
+wait_time = 3.5
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=782571415]
+layer = 10
+
+[node name="TopBar" type="HBoxContainer" parent="HUD" unique_id=500132404]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 8.0
+offset_right = -16.0
+offset_bottom = 52.0
+theme_override_constants/separation = 20
+
+[node name="HealthLabel" type="Label" parent="HUD/TopBar" unique_id=1911469442]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "心理健康: 100"
+vertical_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="HUD/TopBar" unique_id=1890532792]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+
+[node name="ScenarioLabel" type="Label" parent="HUD/TopBar" unique_id=1934310374]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "场景："
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="HUD/TopBar" unique_id=841063514]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(1, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "分数: 0"
+vertical_alignment = 1
+
+[node name="CountdownLabel" type="Label" parent="HUD/TopBar" unique_id=1775711061]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "⏱ 120"
+
+[node name="ComboLabel" type="Label" parent="HUD" unique_id=30355084]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 58.0
+offset_right = 100.0
+offset_bottom = 92.0
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+theme_override_font_sizes/font_size = 26
+text = "连击 x2!"
+horizontal_alignment = 1
+
+[node name="AnswerButtons" type="HBoxContainer" parent="HUD" unique_id=2065869195]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -56.0
+offset_right = 180.0
+offset_bottom = -10.0
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="BtnFact" type="Button" parent="HUD/AnswerButtons" unique_id=297078402]
+unique_name_in_owner = true
+layout_mode = 2
+text = "事实 (F)"
+
+[node name="BtnThought" type="Button" parent="HUD/AnswerButtons" unique_id=204729949]
+unique_name_in_owner = true
+layout_mode = 2
+text = "想法 (J)"
+
+[node name="Background" type="ColorRect" parent="." unique_id=1602861248]
+light_mask = 31
+z_index = -10
+offset_left = 160.0
+offset_top = 66.0
+offset_right = 160.0
+offset_bottom = 66.0
+color = Color(0, 0, 0, 1)
+
+[node name="Maze" type="Node2D" parent="." unique_id=114753271]
+z_index = -5
+script = ExtResource("4_aa1sf")
+
+[node name="ExitZone" type="Area2D" parent="." unique_id=1079981780]
+position = Vector2(1200, 700)
+
+[node name="ExitShape" type="CollisionShape2D" parent="ExitZone" unique_id=855766753]
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=2007708244]
+z_index = 10
+script = ExtResource("5_svcr2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=997308104]
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=235152322]
+
+[node name="FogLayer" type="CanvasLayer" parent="." unique_id=954533680]
+script = ExtResource("6_tkpq3")
+
+[node name="CardsLayer" type="CanvasLayer" parent="." unique_id=1867232937]
+layer = 7
+follow_viewport_enabled = true

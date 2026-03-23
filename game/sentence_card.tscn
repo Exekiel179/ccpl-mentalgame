@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://dgqwxb4sb8kl4"]
+
+[ext_resource type="Script" uid="uid://jpjtctehpe3p" path="res://game/sentence_card.gd" id="1_20mxe"]
+
+[node name="SentenceCard" type="Control" unique_id=491594313]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_20mxe")
+
+[node name="Panel" type="Panel" parent="." unique_id=1474485213]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=75492056]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1280379930]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SentenceLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1689693247]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "..."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TimerBar" type="ProgressBar" parent="Panel/MarginContainer/VBoxContainer" unique_id=26285566]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 5.0
+value = 5.0
+show_percentage = false
+
+[node name="FeedbackLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=985456890]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+autowrap_mode = 3

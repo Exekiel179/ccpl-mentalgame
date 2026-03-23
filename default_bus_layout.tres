@@ -1,0 +1,10 @@
+[gd_resource type="AudioBusLayout" format=3 uid="uid://7xi0ll70hpsm"]
+
+[sub_resource type="AudioEffectEQ21" id="AudioEffectEQ21_j3pel"]
+resource_name = "EQ21"
+
+[resource]
+bus/0/solo = true
+bus/0/volume_db = 6.0199986
+bus/0/effect/0/effect = SubResource("AudioEffectEQ21_j3pel")
+bus/0/effect/0/enabled = true
