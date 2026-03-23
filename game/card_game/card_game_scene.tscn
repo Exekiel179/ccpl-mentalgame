@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b6fpnmp14bg3d"]
+
+[ext_resource type="Script" uid="uid://c20e01i3gy3o8" path="res://game/card_game/card_game_controller.gd" id="1_56maq"]
+
+[node name="CardGameScene" type="Node2D" unique_id=1950958575]
+script = ExtResource("1_56maq")

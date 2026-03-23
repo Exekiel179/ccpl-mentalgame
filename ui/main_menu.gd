@@ -7,6 +7,7 @@ const VoiceServiceScript := preload("res://services/voice_service.gd")
 @onready var btn_family: Button         = %BtnFamily
 @onready var btn_social: Button         = %BtnSocial
 @onready var btn_knowledge: Button      = %BtnKnowledge
+var _card_mode_btns: Array[Button] = []
 @onready var bg_sprite: Sprite2D        = %BGSprite
 @onready var char_sprite: Sprite2D      = %CharSprite
 @onready var gemini_service: Node       = $GeminiService
@@ -21,6 +22,7 @@ func _ready() -> void:
 	btn_knowledge.pressed.connect(func(): GameManager.go_to_knowledge())
 
 	_rebuild_menu()
+	_setup_card_mode_section()
 	_setup_difficulty_buttons()
 	_setup_reset_button()
 	_update_model_status()
@@ -154,6 +156,38 @@ func _style_btn(btn: Button, accent: Color,
 	btn.add_theme_font_size_override("font_size", font_sz)
 	btn.add_theme_color_override("font_color", Color(0.88, 0.93, 1.0))
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
+
+func _setup_card_mode_section() -> void:
+	var parent := btn_academic.get_parent()
+	if parent == null:
+		return
+	var sep := _make_sep(Color(0.55, 0.35, 1.0, 0.30))
+	parent.add_child(sep)
+
+	var card_hdr := Label.new()
+	card_hdr.text = "♥  卡牌对战模式"
+	card_hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card_hdr.add_theme_font_size_override("font_size", 15)
+	card_hdr.add_theme_color_override("font_color", Color(0.85, 0.55, 1.0))
+	card_hdr.add_theme_color_override("font_outline_color", Color(0.10, 0.04, 0.22))
+	card_hdr.add_theme_constant_override("outline_size", 3)
+	parent.add_child(card_hdr)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 10)
+	parent.add_child(hbox)
+
+	var scenarios: Array = ["学业压力", "家庭矛盾", "社交压力"]
+	var emojis: Array    = ["📚", "🏠", "👥"]
+	for i in 3:
+		var btn := Button.new()
+		btn.text = "%s %s" % [emojis[i], scenarios[i]]
+		var sc: String = scenarios[i]
+		btn.pressed.connect(func(): GameManager.start_card_game(sc))
+		hbox.add_child(btn)
+		_style_btn(btn, Color(0.65, 0.35, 1.0), 120, 38, 14)
+		_card_mode_btns.append(btn)
 
 func _setup_difficulty_buttons() -> void:
 	var parent := btn_academic.get_parent()

@@ -6,6 +6,7 @@ const KNOWLEDGE_SCENE   := "res://ui/knowledge_screen.tscn"
 const GAME_SCENE        := "res://game/game_scene.tscn"
 const VOICE_CALIB_SCENE := "res://ui/voice_calibration.tscn"
 const VOICE_TEMPLATE_PATH := "user://voice_templates_v3.dat"
+const CARD_GAME_SCENE    := "res://game/card_game/card_game_scene.tscn"
 
 var current_scenario: String = "学业压力"
 var current_level: int = 1
@@ -32,6 +33,10 @@ func start_game(scenario: String = "学业压力") -> void:
 		current_level = 1
 	# Always show calibration screen — player can skip if model exists
 	get_tree().change_scene_to_file(VOICE_CALIB_SCENE)
+
+func start_card_game(scenario: String = "学业压力") -> void:
+	current_scenario = scenario
+	get_tree().change_scene_to_file(CARD_GAME_SCENE)
 
 func update_high_score(score: int) -> void:
 	last_score = score
