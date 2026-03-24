@@ -9,3 +9,7 @@
 .claude/
 .gemini/
 .mcp.json
+AGENTS.md
+CLAUDE.md
+start_godot_mcp.bat
+addons/godot_mcp/
