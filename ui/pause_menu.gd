@@ -111,10 +111,10 @@ func _on_knowledge() -> void:
 	get_tree().paused = false
 	visible = false
 	AmbientMusic.stop()
-	get_tree().change_scene_to_file("res://ui/knowledge_screen.tscn")
+	GameManager.go_to_knowledge()
 
 func _on_quit() -> void:
 	get_tree().paused = false
 	visible = false
 	AmbientMusic.stop()
-	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	GameManager.go_to_main_menu()

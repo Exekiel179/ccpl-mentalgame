@@ -1,0 +1,250 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/knowledge_match_screen.gd" id="1_8kf4h"]
+
+[node name="KnowledgeMatchScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8kf4h")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.99, 0.97, 0.94, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1140, 620)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 22
+
+[node name="RootVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "☁ 心理知识卡片"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "翻开三张小卡片，温柔地认识自己的想法与情绪。"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="MatchSection" type="VBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="MatchPromptLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "请把下面的解释，连到上方正确的标题。"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="MatchProgressLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "第 1 / 5 题"
+horizontal_alignment = 1
+
+[node name="TitlesFlow" type="HFlowContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 136)
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+alignment = 1
+
+[node name="CurrentDetailPanel" type="PanelContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CurrentDetailMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection/CurrentDetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="CurrentDetailVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection/CurrentDetailPanel/CurrentDetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CurrentDetailTitle" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection/CurrentDetailPanel/CurrentDetailMargin/CurrentDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "题目详解"
+horizontal_alignment = 1
+
+[node name="CurrentDetailScroll" type="ScrollContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection/CurrentDetailPanel/CurrentDetailMargin/CurrentDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="CurrentDetailLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection/CurrentDetailPanel/CurrentDetailMargin/CurrentDetailVBox/CurrentDetailScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "这里会显示一段心理知识的详解。"
+autowrap_mode = 3
+
+[node name="MatchFeedbackLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/MatchSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "选一个你觉得最对应的标题吧。"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ActionsRow" type="HBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="BtnRefresh" type="Button" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "换一组 ✨"
+
+[node name="BtnStart" type="Button" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "开始游戏 ▶"
+
+[node name="BtnMenu" type="Button" parent="CenterContainer/MainPanel/MarginContainer/RootVBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "返回主菜单"
+
+[node name="Overlay" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Dimmer" type="ColorRect" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.22, 0.18, 0.16, 0.5)
+
+[node name="ModalCenter" type="CenterContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="Overlay/ModalCenter"]
+custom_minimum_size = Vector2(740, 450)
+layout_mode = 2
+
+[node name="DetailMargin" type="MarginContainer" parent="Overlay/ModalCenter/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="DetailVBox" type="VBoxContainer" parent="Overlay/ModalCenter/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DetailTitleLabel" type="Label" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "卡片标题"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="DetailMetaLabel" type="Label" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "标签"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="DetailBodyCard" type="PanelContainer" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DetailBodyMargin" type="MarginContainer" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox/DetailBodyCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 22
+
+[node name="DetailBodyLabel" type="Label" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox/DetailBodyCard/DetailBodyMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 21
+text = "详情内容"
+autowrap_mode = 3
+
+[node name="DetailExampleCard" type="PanelContainer" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+
+[node name="DetailExampleMargin" type="MarginContainer" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox/DetailExampleCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 16
+
+[node name="DetailExampleLabel" type="Label" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox/DetailExampleCard/DetailExampleMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "示例"
+autowrap_mode = 3
+
+[node name="BtnCloseDetail" type="Button" parent="Overlay/ModalCenter/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "我知道啦"

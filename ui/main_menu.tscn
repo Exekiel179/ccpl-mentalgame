@@ -1,9 +1,9 @@
-[gd_scene format=3 uid="uid://c1i1jvrlghdnd"]
+[gd_scene load_steps=3 format=3 uid="uid://c1i1jvrlghdnd"]
 
 [ext_resource type="Script" uid="uid://dojfqt8aqou7u" path="res://ui/main_menu.gd" id="1_t7e0r"]
 [ext_resource type="Script" uid="uid://brbui5n7g64b3" path="res://services/gemini_service.gd" id="2_0dkrt"]
 
-[node name="MainMenu" type="Control" unique_id=1760689295]
+[node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,83 +12,201 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_t7e0r")
 
-[node name="BG" type="ColorRect" parent="." unique_id=1875121978]
-layout_mode = 0
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.98, 0.96, 0.92, 1)
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.988235, 0.960784, 0.921569, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1303372902]
-layout_mode = 0
+[node name="BGSprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(640, 360)
+
+[node name="Layout" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=436288074]
+[node name="LeftMargin" type="Control" parent="Layout"]
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=877760397]
+[node name="CharAnchor" type="Marker2D" parent="Layout/LeftMargin"]
+unique_name_in_owner = true
+position = Vector2(190, 480)
+
+[node name="CenterArea" type="CenterContainer" parent="Layout"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+size_flags_horizontal = 3
+
+[node name="MainCard" type="PanelContainer" parent="Layout/CenterArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="Content" type="MarginContainer" parent="Layout/CenterArea/MainCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 35
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 35
+
+[node name="VBox" type="VBoxContainer" parent="Layout/CenterArea/MainCard/Content"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Header" type="VBoxContainer" parent="Layout/CenterArea/MainCard/Content/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="Layout/CenterArea/MainCard/Content/VBox/Header"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 52
 text = "心理健康训练场"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=2132392385]
+[node name="SubtitleLabel" type="Label" parent="Layout/CenterArea/MainCard/Content/VBox/Header"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 20
-text = "认知重构 · 遆彦自己 · 走向平衡"
+theme_override_colors/font_color = Color(0.45, 0.4, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+text = "认知重构 · 遇见更好的自己 · 走向平衡"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer" unique_id=544967972]
+[node name="MainFeature" type="VBoxContainer" parent="Layout/CenterArea/MainCard/Content/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="ScenarioLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1861644181]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "选择场景："
-horizontal_alignment = 1
-
-[node name="BtnAcademic" type="Button" parent="CenterContainer/VBoxContainer" unique_id=584282270]
+[node name="BtnKnowledge" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/MainFeature"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "📚 学业压力"
+theme_type_variation = &"FeatureButton"
+text = "🌀  迷宫探索训练 (核心成长训练)"
 
-[node name="BtnFamily" type="Button" parent="CenterContainer/VBoxContainer" unique_id=2015555647]
+[node name="BtnKnowledgeCards" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/MainFeature"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "🏠 家庭矛盾"
+theme_type_variation = &"FeatureButton"
+text = "📖  心理知识卡片 (独立入口)"
 
-[node name="BtnSocial" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1457365299]
+[node name="BtnCardMode" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/MainFeature"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "👥 社交压力"
+theme_type_variation = &"FeatureButton"
+text = "🃏  CBT 卡牌挑战 (对话式七步练习)"
 
-[node name="Divider" type="HSeparator" parent="CenterContainer/VBoxContainer" unique_id=2096670143]
+[node name="ScenarioSection" type="VBoxContainer" parent="Layout/CenterArea/MainCard/Content/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="BtnKnowledge" type="Button" parent="CenterContainer/VBoxContainer" unique_id=288731760]
-unique_name_in_owner = true
+[node name="ScenarioLabel" type="Label" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.4, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "📖 认知重构是什么？"
+text = "🌿  选择练习主题"
+horizontal_alignment = 1
 
-[node name="BGSprite" type="Sprite2D" parent="." unique_id=1978943729]
+[node name="ScenarioHint" type="Label" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.45, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "下方主题会同时应用到上面的两种玩法入口。"
+horizontal_alignment = 1
+
+autowrap_mode = 2
+
+[node name="Grid" type="GridContainer" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="BtnAcademic" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection/Grid"]
 unique_name_in_owner = true
-z_index = -1
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+text = "📚  学业压力"
 
-[node name="GeminiService" type="Node" parent="." unique_id=1542065593]
+[node name="BtnFamily" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+text = "🏠  家庭矛盾"
+
+[node name="BtnSocial" type="Button" parent="Layout/CenterArea/MainCard/Content/VBox/ScenarioSection/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+text = "👥  社交压力"
+
+[node name="Footer" type="VBoxContainer" parent="Layout/CenterArea/MainCard/Content/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HSeparator" type="HSeparator" parent="Layout/CenterArea/MainCard/Content/VBox/Footer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DifficultyHBox" type="HBoxContainer" parent="Layout/CenterArea/MainCard/Content/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Label" type="Label" parent="Layout/CenterArea/MainCard/Content/VBox/Footer/DifficultyHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "训练强度:"
+
+[node name="RightArea" type="MarginContainer" parent="Layout"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 30
+
+[node name="TipsVBox" type="VBoxContainer" parent="Layout/RightArea"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Tip1" type="PanelContainer" parent="Layout/RightArea/TipsVBox"]
+layout_mode = 2
+theme_type_variation = &"TipCard"
+
+[node name="Label" type="Label" parent="Layout/RightArea/TipsVBox/Tip1"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "💡 小知识: 
+积极的认知重构可以显著改善焦虑情绪，帮助我们看到硬币的另一面。"
+autowrap_mode = 2
+
+[node name="Tip2" type="PanelContainer" parent="Layout/RightArea/TipsVBox"]
+layout_mode = 2
+theme_type_variation = &"TipCard"
+
+[node name="Label" type="Label" parent="Layout/RightArea/TipsVBox/Tip2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "✨ 贴士:
+尝试在游戏中识别“灾难化思维”，这是迈向心理成熟的第一步。"
+autowrap_mode = 2
+
+[node name="CharSprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+z_index = 1
+
+[node name="GeminiService" type="Node" parent="."]
 script = ExtResource("2_0dkrt")
 
-[node name="CharSprite" type="Sprite2D" parent="." unique_id=923097489]
-unique_name_in_owner = true
-modulate = Color(0, 0, 0, 1)
-scale = Vector2(1e-05, 1e-05)
-
-[node name="GeminiServiceChar" type="Node" parent="." unique_id=797214098]
+[node name="GeminiServiceChar" type="Node" parent="."]
 script = ExtResource("2_0dkrt")

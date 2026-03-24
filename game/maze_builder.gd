@@ -1,18 +1,18 @@
-## MazeBuilder — random maze via iterative DFS. 15x9 rooms, 40px cells.
+## MazeBuilder — random maze via iterative DFS with warm therapeutic styling.
 extends Node2D
 
 const ROOMS_COLS: int  = 23
 const ROOMS_ROWS: int  = 15
-const CELL: float      = 34.0
-const OFFSET_X: float  = 10.0
-const OFFSET_Y: float  = 0.0
+const CELL: float      = 42.0
+const OFFSET_X: float  = 46.0
+const OFFSET_Y: float  = 24.0
 
-const WALL_COLOR: Color  = Color(0.08, 0.10, 0.25)
-const WALL_EDGE: Color   = Color(0.15, 0.20, 0.40)
-const FLOOR_COLOR: Color = Color(0.05, 0.07, 0.16)
-const FLOOR_ALT: Color   = Color(0.06, 0.09, 0.18)
-const EXIT_COLOR: Color  = Color(0.10, 0.75, 0.35)
-const START_COLOR: Color = Color(0.15, 0.50, 0.90)
+const WALL_COLOR: Color  = Color(0.48, 0.44, 0.39)
+const WALL_EDGE: Color   = Color(0.70, 0.66, 0.60)
+const FLOOR_COLOR: Color = Color(0.97, 0.95, 0.90)
+const FLOOR_ALT: Color   = Color(0.92, 0.89, 0.84)
+const EXIT_COLOR: Color  = Color(0.77, 0.54, 0.39)
+const START_COLOR: Color = Color(0.58, 0.73, 0.82)
 
 ## Start room (0,0) -> display cell (1,1)
 static func get_start_world() -> Vector2:
@@ -120,8 +120,8 @@ func _make_wall(wx: float, wy: float) -> void:
 	body.add_child(edge)
 	# Inner wall
 	var vis := ColorRect.new()
-	vis.size = Vector2(CELL - 3.0, CELL - 3.0)
-	vis.position = Vector2(-CELL * 0.5 + 1.5, -CELL * 0.5 + 1.5)
+	vis.size = Vector2(CELL - 5.0, CELL - 5.0)
+	vis.position = Vector2(-CELL * 0.5 + 2.5, -CELL * 0.5 + 2.5)
 	vis.color = WALL_COLOR
 	body.add_child(vis)
 	add_child(body)

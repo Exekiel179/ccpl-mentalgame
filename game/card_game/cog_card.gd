@@ -4,6 +4,14 @@ extends Control
 
 const CogData = preload("res://data/cog_card_data.gd")
 
+const CARD_CREAM: Color = Color(0.98, 0.96, 0.92, 0.98)
+const CARD_CREAM_SOFT: Color = Color(0.95, 0.92, 0.86, 0.98)
+const CARD_TEXT: Color = Color(0.27, 0.24, 0.20)
+const CARD_MUTED: Color = Color(0.47, 0.41, 0.35)
+const CARD_GREEN: Color = Color(0.55, 0.68, 0.57)
+const CARD_TERRACOTTA: Color = Color(0.76, 0.57, 0.47)
+const CARD_BLUE: Color = Color(0.65, 0.77, 0.84)
+
 # ── Spring physics (from card.gd in the framework) ────────────────────────────
 var velocity: Vector2 = Vector2.ZERO
 const DAMPING:   float = 0.35
@@ -27,7 +35,7 @@ var card_info:  Dictionary = {}
 var targets_distortion: Array = []
 var effect_value:       int   = 0
 
-# Thought card properties
+# Crisis / thought-like display properties
 var distortion_type: int = -1
 var damage_value:    int = 0
 
@@ -68,16 +76,23 @@ func _update_drop_zone() -> void:
 # ── Initialization ─────────────────────────────────────────────────────────────
 func init_card(key: String) -> void:
 	card_key = key
-	var skill_cards := CogData.get_skill_cards()
-	var thought_cards := CogData.get_thought_cards()
+	var skill_cards: Dictionary = CogData.get_skill_cards()
+	var crisis_cards: Dictionary = {}
+	for encounter in CogData.get_encounters_for_scenario(CogData.SCENARIO_ACADEMIC):
+		crisis_cards[encounter.get("id", "")] = {
+			"display_name": encounter.get("title", ""),
+			"description": encounter.get("situation_text", ""),
+			"distortion": int(encounter.get("distortion_options", [{"id": 0}])[0].get("id", 0)),
+			"damage": 0,
+		}
 	if skill_cards.has(key):
 		card_type = CogData.CardType.SKILL
 		card_info = skill_cards[key]
 		targets_distortion = card_info["targets"]
 		effect_value = card_info["effect_value"]
-	elif thought_cards.has(key):
-		card_type = CogData.CardType.THOUGHT
-		card_info = thought_cards[key]
+	elif crisis_cards.has(key):
+		card_type = CogData.CardType.CRISIS
+		card_info = crisis_cards[key]
 		distortion_type = card_info["distortion"]
 		damage_value = card_info["damage"]
 	_build_visual()
@@ -93,15 +108,26 @@ func _build_visual() -> void:
 	var sb := StyleBoxFlat.new()
 	if card_type == CogData.CardType.SKILL:
 		var c: Color = card_info["color"]
-		sb.bg_color = Color(c.r * 0.18, c.g * 0.18, c.b * 0.18, 0.97)
-		sb.border_color = c
+		sb.bg_color = Color(
+			lerpf(CARD_CREAM.r, c.r, 0.16),
+			lerpf(CARD_CREAM.g, c.g, 0.14),
+			lerpf(CARD_CREAM.b, c.b, 0.12),
+			0.99
+		)
+		sb.border_color = Color(
+			lerpf(c.r, CARD_GREEN.r, 0.20),
+			lerpf(c.g, CARD_GREEN.g, 0.20),
+			lerpf(c.b, CARD_GREEN.b, 0.20),
+			0.92
+		)
 	else:
-		sb.bg_color = Color(0.28, 0.06, 0.06, 0.97)
-		sb.border_color = Color(0.92, 0.28, 0.28)
+		sb.bg_color = CARD_CREAM_SOFT
+		sb.border_color = CARD_TERRACOTTA
 	sb.set_border_width_all(3)
-	sb.set_corner_radius_all(10)
-	sb.shadow_color = Color(0, 0, 0, 0.4)
-	sb.shadow_size = 5
+	sb.set_corner_radius_all(20)
+	sb.shadow_color = Color(0.38, 0.31, 0.24, 0.18)
+	sb.shadow_size = 10
+	sb.shadow_offset = Vector2(0, 4)
 	panel.add_theme_stylebox_override("panel", sb)
 	add_child(panel)
 
@@ -126,10 +152,8 @@ func _build_visual() -> void:
 	name_lbl.text = card_info["display_name"]
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	name_lbl.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0))
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	name_lbl.add_theme_constant_override("outline_size", 3)
+	name_lbl.add_theme_font_size_override("font_size", 15)
+	name_lbl.add_theme_color_override("font_color", CARD_TEXT)
 	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_lbl)
 
@@ -137,15 +161,15 @@ func _build_visual() -> void:
 	var type_lbl := Label.new()
 	type_lbl.name = "TypeLabel"
 	type_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	type_lbl.add_theme_font_size_override("font_size", 10)
+	type_lbl.add_theme_font_size_override("font_size", 11)
 	type_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if card_type == CogData.CardType.SKILL:
 		type_lbl.text = "【技能】"
-		type_lbl.add_theme_color_override("font_color", card_info["color"])
+		type_lbl.add_theme_color_override("font_color", CARD_GREEN)
 	else:
 		var d_name: String = CogData.distortion_name(distortion_type)
-		type_lbl.text = "【%s】" % d_name
-		type_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.55))
+		type_lbl.text = "【危机卡｜%s】" % d_name
+		type_lbl.add_theme_color_override("font_color", CARD_TERRACOTTA)
 	vbox.add_child(type_lbl)
 
 	# Separator
@@ -159,8 +183,8 @@ func _build_visual() -> void:
 	desc_lbl.text = card_info["description"]
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", Color(0.80, 0.84, 0.92))
+	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_color_override("font_color", CARD_MUTED)
 	desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(desc_lbl)
 
@@ -176,11 +200,11 @@ func _build_visual() -> void:
 	val_lbl.add_theme_font_size_override("font_size", 11)
 	val_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if card_type == CogData.CardType.SKILL:
-		val_lbl.text = "+%d 心理值" % effect_value
-		val_lbl.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))
+		val_lbl.text = "+%d 稳定收益" % effect_value
+		val_lbl.add_theme_color_override("font_color", CARD_GREEN)
 	else:
-		val_lbl.text = "-%d 心理值" % damage_value
-		val_lbl.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+		val_lbl.text = "七步练习入口"
+		val_lbl.add_theme_color_override("font_color", CARD_BLUE)
 	vbox.add_child(val_lbl)
 
 	# Invisible drag button overlay
@@ -201,8 +225,8 @@ func _build_visual() -> void:
 func _on_drag_start() -> void:
 	if state != CardState.FOLLOWING:
 		return
-	if card_type == CogData.CardType.THOUGHT:
-		return  # thought cards are not draggable by player
+	if card_type != CogData.CardType.SKILL:
+		return
 	# Create ghost duplicate in VFS layer
 	_dup = _make_ghost()
 	# Start dragging

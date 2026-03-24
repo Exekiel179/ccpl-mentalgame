@@ -1,5 +1,5 @@
 ## VoiceService — records microphone, classifies locally via 7-dim DTW.
-## Calibration: record 3 samples each → verification → game.
+## Calibration: record 4 samples each → verification → game.
 extends Node
 
 signal voice_result(category: String)
@@ -10,6 +10,7 @@ signal calibration_progress(word: String, count: int, needed: int)
 signal calibration_verify(word: String)
 signal calibration_verify_result(word: String, passed: bool)
 signal calibration_done
+signal calibration_sample_collected(word: String, count: int, frames: PackedVector2Array)
 
 const ClassifierScript := preload("res://services/voice_classifier.gd")
 const RECORD_MAX := 1.8   # auto-stop after this many seconds
@@ -18,7 +19,16 @@ const SAMPLES_NEEDED := 4
 const VERIFY_PASSES := 2      # 2 consecutive correct passes per word
 const MAX_VERIFY_FAILS := 3   # re-record word if this many failures in verify
 
+const WORD_FACT := "fact"
+const WORD_THOUGHT := "thought"
+const WORDS := [WORD_FACT, WORD_THOUGHT]
+const WORD_LABELS := {
+	WORD_FACT: "事实",
+	WORD_THOUGHT: "想法",
+}
+
 enum Phase { IDLE, COLLECTING, VERIFYING }
+enum CalibrationMode { REFINE, RESET }
 
 var _mic_player: AudioStreamPlayer
 var _capture: AudioEffectCapture
@@ -34,6 +44,12 @@ var _calib_phase: int = Phase.IDLE
 var _verify_word: String = ""
 var _verify_pass_count: int = 0   # consecutive correct
 var _verify_fail_count: int = 0   # total failures for this word
+var _calibration_mode: int = CalibrationMode.REFINE
+var _baseline_templates: Dictionary = {}
+var _session_samples: Dictionary = {}
+var _session_classifier: RefCounted
+var _in_recollect: bool = false          # true when re-collecting after too many verify fails
+var _recollect_verify_word: String = ""  # which word to re-verify after re-collection
 
 func is_recording() -> bool:
 	return _recording
@@ -42,16 +58,26 @@ func is_calibrating() -> bool:
 	return _calibrating
 
 func has_calibration() -> bool:
-	return _classifier.has_templates()
+	return _classifier != null and _classifier.is_model_ready()
 
 func get_calib_phase() -> int:
 	return _calib_phase
+
+func get_calibration_status() -> Dictionary:
+	if _classifier == null:
+		return {"ready": false, "reason": "classifier unavailable"}
+	var errors: PackedStringArray = _classifier.validate_model()
+	return {
+		"ready": errors.is_empty(),
+		"reason": "" if errors.is_empty() else errors[0],
+		"errors": errors,
+	}
 
 func _ready() -> void:
 	_classifier = ClassifierScript.new()
 	_classifier.load_templates()
 	_setup_audio()
-	if _classifier.has_templates():
+	if _classifier.is_model_ready():
 		print("[VoiceService] Calibration data loaded")
 	else:
 		print("[VoiceService] No calibration — required before play")
@@ -94,7 +120,7 @@ func stop_recording() -> void:
 	var frames := _capture.get_buffer(_capture.get_frames_available())
 	print("[VoiceService] Recorded %d frames" % frames.size())
 	if frames.size() < RECORD_MIN_FRAMES:
-		voice_failed.emit("\u6ca1\u6709\u68c0\u6d4b\u5230\u58f0\u97f3\uff0c\u8bf7\u518d\u8bd5\u4e00\u6b21")
+		voice_failed.emit("没有检测到声音，请再试一次")
 		return
 	if _calibrating:
 		_process_calibration(frames)
@@ -108,32 +134,36 @@ func _process(delta: float) -> void:
 			stop_recording()
 
 func _classify_gameplay(frames: PackedVector2Array) -> void:
-	if not _classifier.has_templates():
-		voice_failed.emit("\u8bf7\u5148\u6821\u51c6\u8bed\u97f3")
+	if not has_calibration():
+		voice_failed.emit("请先校准语音")
 		return
 	var res: Dictionary = _classifier.classify(frames)
 	var result: String = res.get("result", "")
 	var conf: float = res.get("confidence", 0.0)
 	if result == "":
-		voice_failed.emit("\u672a\u8bc6\u522b (%.0f%%)" % [conf * 100.0])
+		voice_failed.emit("未识别 (%.0f%%)" % [conf * 100.0])
 		return
 	print("[VoiceService] Result: %s (conf=%.1f%%)" % [result, conf * 100.0])
 	voice_result.emit(result)
 
 ## ---- Calibration Flow ----
-## Phase 1 (COLLECTING): Record 3×fact + 3×thought
-## Phase 2 (VERIFYING): Must correctly classify 1×fact + 1×thought
-## If verify fails → re-record that word and re-verify
+## Phase 1 (COLLECTING): Record 4×fact + 4×thought into session data
+## Phase 2 (VERIFYING): Classify probe samples against the staged session model
+## Only commit the staged model after both words pass verification
 
 func start_calibration(reset: bool = true) -> void:
 	_calibrating = true
-	if reset:
-		_classifier.clear_templates()
+	_calibration_mode = CalibrationMode.RESET if reset else CalibrationMode.REFINE
+	_baseline_templates = {} if reset else _classifier.get_templates_copy()
+	if _calibration_mode == CalibrationMode.REFINE and not _classifier.is_model_ready():
+		_baseline_templates = {}
+	_reset_session_samples()
+	_rebuild_session_classifier()
 	_calib_phase = Phase.COLLECTING
-	_calib_word = "fact"
-	_calib_step = 0
-	calibration_progress.emit("\u4e8b\u5b9e", 0, SAMPLES_NEEDED)
-	print("[VoiceService] Calibration: say \"\u4e8b\u5b9e\" (%d times)" % SAMPLES_NEEDED)
+	_in_recollect = false
+	_recollect_verify_word = ""
+	_begin_collect_for_word(WORD_FACT)
+	print("[VoiceService] Calibration: say \"事实\" (%d times)" % SAMPLES_NEEDED)
 
 func _process_calibration(frames: PackedVector2Array) -> void:
 	if _calib_phase == Phase.COLLECTING:
@@ -142,84 +172,174 @@ func _process_calibration(frames: PackedVector2Array) -> void:
 		_on_verify_sample(frames)
 
 func _on_collect_sample(frames: PackedVector2Array) -> void:
-	_classifier.add_template(_calib_word, frames)
-	_calib_step += 1
-	var word_cn: String = "\u4e8b\u5b9e" if _calib_word == "fact" else "\u60f3\u6cd5"
+	var staged_templates: Dictionary = _build_templates_for_word(_calib_word, frames)
+	if staged_templates.is_empty():
+		voice_failed.emit("录音特征不足，请换个更清晰的发音再试一次")
+		return
+	_session_samples[_calib_word].append({
+		"frames": frames,
+		"templates": staged_templates,
+	})
+	_rebuild_session_classifier()
+	_calib_step = _session_samples[_calib_word].size()
+	var word_cn: String = _word_to_cn(_calib_word)
+	calibration_sample_collected.emit(word_cn, _calib_step, frames)
 	print("[VoiceService] Collected %s %d/%d" % [word_cn, _calib_step, SAMPLES_NEEDED])
 	if _calib_step < SAMPLES_NEEDED:
 		calibration_progress.emit(word_cn, _calib_step, SAMPLES_NEEDED)
-	elif _calib_word == "fact":
-		_calib_word = "thought"
-		_calib_step = 0
-		calibration_progress.emit("\u60f3\u6cd5", 0, SAMPLES_NEEDED)
-		print("[VoiceService] Now say \"\u60f3\u6cd5\"")
+	elif _in_recollect:
+		# Finished re-collecting after too many verification failures — go back to verify same word
+		_in_recollect = false
+		var target := _recollect_verify_word
+		_recollect_verify_word = ""
+		_begin_verification_for_word(target)
+		print("[VoiceService] Re-collected \"%s\", resuming verification" % _word_to_cn(target))
+	elif _calib_word == WORD_FACT:
+		_begin_collect_for_word(WORD_THOUGHT)
+		print("[VoiceService] Now say \"想法\"")
 	else:
-		# All collected → start verification
-		_calib_phase = Phase.VERIFYING
-		_verify_word = "fact"
-		_verify_pass_count = 0
-		_verify_fail_count = 0
-		calibration_verify.emit("\u4e8b\u5b9e")
-		print("[VoiceService] Verify: say \"\u4e8b\u5b9e\" (%d times)" % VERIFY_PASSES)
+		_begin_verification_for_word(WORD_FACT)
+		print("[VoiceService] Verify: say \"事实\" (%d times)" % VERIFY_PASSES)
 
 func _on_verify_sample(frames: PackedVector2Array) -> void:
-	# Always add as training data — the user IS saying the expected word,
-	# so every verify sample is valid regardless of classification result.
-	# FIFO limit (MAX_TEMPLATES_PER_CLASS=6) prevents imbalance.
-	_classifier.add_template(_verify_word, frames)
-	var res: Dictionary = _classifier.classify(frames)
+	if _session_classifier == null or not _session_classifier.is_model_ready():
+		voice_failed.emit("当前训练模型不可用，请重新采集样本")
+		_in_recollect = false
+		_recollect_verify_word = ""
+		_begin_collect_for_word(WORD_FACT)
+		return
+	var res: Dictionary = _session_classifier.classify(frames)
 	var got: String = res.get("result", "")
 	var conf: float = res.get("confidence", 0.0)
-	var n_fact: int = _classifier.get_fact_count()
-	var n_thought: int = _classifier.get_thought_count()
-	var expected_cn: String = "\u4e8b\u5b9e" if _verify_word == "fact" else "\u60f3\u6cd5"
-	var got_cn: String = "\u4e8b\u5b9e" if got == "fact" else ("\u60f3\u6cd5" if got == "thought" else "\u672a\u8bc6\u522b")
-	print("[VoiceService] Verify: expected=%s got=%s conf=%.1f%% pass=%d/%d fail=%d/%d" % [
+	var n_fact: int = _session_classifier.get_fact_count()
+	var n_thought: int = _session_classifier.get_thought_count()
+	var expected_cn: String = _word_to_cn(_verify_word)
+	var got_cn: String = _word_to_cn(got)
+	print("[VoiceService] Verify: expected=%s got=%s conf=%.1f%% pass=%d/%d fail=%d/%d staged=%d+%d" % [
 		expected_cn, got_cn, conf * 100.0, _verify_pass_count, VERIFY_PASSES,
-		_verify_fail_count, MAX_VERIFY_FAILS])
+		_verify_fail_count, MAX_VERIFY_FAILS, n_fact, n_thought])
 
 	if got == _verify_word:
 		_verify_pass_count += 1
 		calibration_verify_result.emit(expected_cn, true)
 		if _verify_pass_count >= VERIFY_PASSES:
-			if _verify_word == "fact":
-				_verify_word = "thought"
-				_verify_pass_count = 0
-				_verify_fail_count = 0
-				calibration_verify.emit("\u60f3\u6cd5")
-				print("[VoiceService] \"\u4e8b\u5b9e\" verified! Now verify \"\u60f3\u6cd5\"")
+			if _verify_word == WORD_FACT:
+				_begin_verification_for_word(WORD_THOUGHT)
+				print("[VoiceService] \"事实\" verified! Now verify \"想法\"")
 			else:
+				if not _commit_session_model():
+					return
 				_calibrating = false
 				_calib_phase = Phase.IDLE
-				_classifier.save_templates()
 				calibration_done.emit()
 				print("[VoiceService] Calibration complete! (fact=%d thought=%d templates)" % [
-					n_fact, n_thought])
+					_classifier.get_fact_count(), _classifier.get_thought_count()])
 		else:
 			calibration_verify.emit(expected_cn)
 	else:
 		_verify_pass_count = 0
 		_verify_fail_count += 1
+		# Add this misidentified recording (with correct label) to training set and retrain
+		var new_templates: Dictionary = _build_templates_for_word(_verify_word, frames)
+		if not new_templates.is_empty():
+			_session_samples[_verify_word].append({
+				"frames": frames,
+				"templates": new_templates,
+			})
+			_rebuild_session_classifier()
+			print("[VoiceService] Added failed sample to training set, retrained (fact=%d thought=%d)" % [
+				_session_classifier.get_fact_count(), _session_classifier.get_thought_count()])
 		calibration_verify_result.emit(expected_cn, false)
 		if _verify_fail_count >= MAX_VERIFY_FAILS:
-			# Collected samples for this word are poor quality — re-record it
 			print("[VoiceService] Too many verify failures (%d), re-collecting \"%s\"" % [
 				_verify_fail_count, expected_cn])
-			_classifier.remove_all_templates(_verify_word)
-			_calib_phase = Phase.COLLECTING
-			_calib_word = _verify_word
-			_calib_step = 0
-			_verify_fail_count = 0
-			_verify_pass_count = 0
-			calibration_progress.emit(expected_cn, 0, SAMPLES_NEEDED)
+			_session_samples[_verify_word].clear()
+			_rebuild_session_classifier()
+			_in_recollect = true
+			_recollect_verify_word = _verify_word
+			_begin_collect_for_word(_verify_word)
 		else:
 			calibration_verify.emit(expected_cn)
 
 func reset_calibration() -> void:
 	_calibrating = false
 	_calib_phase = Phase.IDLE
+	_in_recollect = false
+	_recollect_verify_word = ""
 	_classifier.clear_templates()
+	_baseline_templates = {}
+	_reset_session_samples()
+	_rebuild_session_classifier()
 	for path in ["user://voice_templates.dat", "user://voice_templates_v2.dat", "user://voice_templates_v3.dat"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	print("[VoiceService] Calibration data cleared")
+
+func _begin_collect_for_word(word: String) -> void:
+	_calib_phase = Phase.COLLECTING
+	_calib_word = word
+	_calib_step = _session_samples[word].size()
+	calibration_progress.emit(_word_to_cn(word), _calib_step, SAMPLES_NEEDED)
+
+func _begin_verification_for_word(word: String) -> void:
+	_calib_phase = Phase.VERIFYING
+	_verify_word = word
+	_verify_pass_count = 0
+	_verify_fail_count = 0
+	calibration_verify.emit(_word_to_cn(word))
+
+func _reset_session_samples() -> void:
+	_session_samples = {
+		WORD_FACT: [],
+		WORD_THOUGHT: [],
+	}
+
+func _rebuild_session_classifier() -> void:
+	_session_classifier = ClassifierScript.new()
+	var templates := {
+		"fact": _collect_word_templates(WORD_FACT),
+		"thought": _collect_word_templates(WORD_THOUGHT),
+	}
+	if not _session_classifier.set_templates(templates):
+		_session_classifier.clear_templates()
+
+func _collect_word_templates(word: String) -> Array:
+	var templates: Array = []
+	var baseline_word: Array = _baseline_templates.get(word, [])
+	for tmpl in baseline_word:
+		templates.append(tmpl)
+	for entry in _session_samples.get(word, []):
+		var entry_templates: Dictionary = entry.get("templates", {})
+		var sample_templates: Array = entry_templates.get(word, [])
+		for tmpl in sample_templates:
+			templates.append(tmpl)
+	var max_templates: int = _session_classifier.get_max_templates_per_class()
+	while templates.size() > max_templates:
+		templates.pop_front()
+	return templates
+
+func _build_templates_for_word(word: String, frames: PackedVector2Array) -> Dictionary:
+	var builder = ClassifierScript.new()
+	builder.add_template(word, frames)
+	var templates: Dictionary = builder.get_templates_copy()
+	if (templates.get(word, []) as Array).is_empty():
+		return {}
+	return templates
+
+func _commit_session_model() -> bool:
+	var templates := {
+		"fact": _collect_word_templates(WORD_FACT),
+		"thought": _collect_word_templates(WORD_THOUGHT),
+	}
+	if not _classifier.set_templates(templates):
+		voice_failed.emit("模型保存失败，请重新校准")
+		return false
+	if not _classifier.is_model_ready():
+		voice_failed.emit("模型校验失败，请重新校准")
+		return false
+	_classifier.save_templates()
+	_baseline_templates = _classifier.get_templates_copy()
+	return true
+
+func _word_to_cn(word: String) -> String:
+	return WORD_LABELS.get(word, "未识别")

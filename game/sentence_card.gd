@@ -108,7 +108,7 @@ func _ready() -> void:
 		if cat == "fact":
 			_answer_label.add_theme_color_override("font_color", Color(0.35, 0.55, 0.40)) # Sage
 		else:
-			_answer_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.6)) # Gentle Coral Pink
+			_answer_label.add_theme_color_override("font_color", Color(0.50, 0.64, 0.78)) # Mist Blue
 		_answer_label.position = Vector2(0, CARD_H - 6)
 		_answer_label.size = Vector2(CARD_W, 24)
 		add_child(_answer_label)
@@ -142,7 +142,7 @@ func _process(delta: float) -> void:
 
 	# Pulsing glow — nearest card is warm orange, others are cream
 	if is_nearest:
-		modulate = Color(1.0, 0.85, 0.6, 0.95 + sin(_phase * 1.5) * 0.05)
+		modulate = Color(0.86, 0.92, 1.0, 0.95 + sin(_phase * 1.5) * 0.05)
 	else:
 		modulate = Color(1.0, 0.95, 0.85, 0.75 + sin(_phase * 0.9) * 0.1)
 
@@ -153,7 +153,7 @@ func _process(delta: float) -> void:
 	var bar_stylebox := timer_bar.get_theme_stylebox("fill") as StyleBoxFlat
 	if bar_stylebox:
 		# Soft green to Terra Cotta (0.8, 0.6, 0.5) transition
-		var low_time_color := Color(0.8, 0.6, 0.5) # Terra Cotta
+		var low_time_color := Color(0.56, 0.66, 0.74) # Steel Blue
 		var high_time_color := Color(0.52, 0.64, 0.54) # Sage Green
 		bar_stylebox.bg_color = low_time_color.lerp(high_time_color, ratio)
 
@@ -177,8 +177,8 @@ func on_hit_player() -> void:
 	_answered = true
 	feedback_label.visible = true
 	feedback_label.text = "碰到了，深呼吸..."
-	feedback_label.modulate = Color(0.75, 0.5, 0.5) # Muted Rose
-	_spawn_particles(Color(0.8, 0.6, 0.5), 15)
+	feedback_label.modulate = Color(0.46, 0.62, 0.74) # Cool Slate Blue
+	_spawn_particles(Color(0.60, 0.72, 0.84), 15)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(queue_free)
@@ -205,8 +205,8 @@ func _show_feedback(correct: bool) -> void:
 		_spawn_particles(Color(0.5, 0.8, 0.6), 20)
 	else:
 		feedback_label.text = "✗ " + sentence_dict.get("explanation", "再想想")
-		feedback_label.modulate = Color(0.8, 0.6, 0.6) # Gentle Coral Pink
-		_spawn_particles(Color(0.8, 0.6, 0.5), 12)
+		feedback_label.modulate = Color(0.52, 0.66, 0.78) # Mist Blue
+		_spawn_particles(Color(0.60, 0.72, 0.84), 12)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 1.2).set_delay(1.0)
 	tween.tween_callback(queue_free)

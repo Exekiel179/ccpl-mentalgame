@@ -11,6 +11,7 @@ func _ready() -> void:
 	var circle := CircleShape2D.new()
 	circle.radius = 12.0
 	cs.shape = circle
+	queue_redraw()
 
 func _physics_process(_delta: float) -> void:
 	var dx := 0.0
@@ -29,23 +30,31 @@ func _physics_process(_delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	# Glow halo
-	draw_circle(Vector2.ZERO, 18.0, Color(0.3, 0.8, 1.0, 0.12))
-	# Body (gradient teal)
-	draw_circle(Vector2.ZERO, 13.0, Color(0.18, 0.55, 0.80))
-	draw_circle(Vector2.ZERO, 11.0, Color(0.25, 0.70, 0.95))
+	# Glow halo (brighter)
+	draw_circle(Vector2.ZERO, 22.0, Color(0.4, 0.9, 1.0, 0.18))
+	
+	# Outer white stroke for contrast
+	draw_circle(Vector2.ZERO, 14.5, Color(1, 1, 1, 1))
+	
+	# Body (Vivid Orange)
+	draw_circle(Vector2.ZERO, 13.0, Color(1.0, 0.45, 0.1))
+	draw_circle(Vector2.ZERO, 10.0, Color(1.0, 0.65, 0.2))
+	
 	# Head
-	draw_circle(Vector2(0, -7), 6.0, Color(0.95, 0.82, 0.68))
-	draw_circle(Vector2(0, -7), 5.0, Color(1.0, 0.88, 0.75))
+	draw_circle(Vector2(0, -7), 6.5, Color(0.95, 0.82, 0.68))
+	draw_circle(Vector2(0, -7), 5.5, Color(1.0, 0.88, 0.75))
+	
 	# Eyes
-	draw_circle(Vector2(-2, -8), 1.5, Color(0.15, 0.15, 0.25))
-	draw_circle(Vector2(2, -8), 1.5, Color(0.15, 0.15, 0.25))
+	draw_circle(Vector2(-2.5, -8), 1.8, Color(0.05, 0.05, 0.15))
+	draw_circle(Vector2(2.5, -8), 1.8, Color(0.05, 0.05, 0.15))
+	
 	# Direction indicator arrow
 	if _move_dir != Vector2.ZERO:
-		var tip := _move_dir * 14.0
-		draw_line(Vector2.ZERO, tip, Color(1, 1, 1, 0.8), 2.0)
-		var perp := Vector2(-_move_dir.y, _move_dir.x) * 3.5
-		draw_line(tip, tip - _move_dir * 4.0 + perp, Color(1, 1, 1, 0.6), 1.5)
-		draw_line(tip, tip - _move_dir * 4.0 - perp, Color(1, 1, 1, 0.6), 1.5)
-	# Outer ring
-	draw_arc(Vector2.ZERO, 13.0, 0, TAU, 32, Color(0.5, 0.9, 1.0, 0.4), 1.5)
+		var tip := _move_dir * 16.0
+		draw_line(Vector2.ZERO, tip, Color(1, 1, 1, 1), 2.5)
+		var perp := Vector2(-_move_dir.y, _move_dir.x) * 4.0
+		draw_line(tip, tip - _move_dir * 5.0 + perp, Color(1, 1, 1, 1), 2.0)
+		draw_line(tip, tip - _move_dir * 5.0 - perp, Color(1, 1, 1, 1), 2.0)
+	
+	# Outer ring (glowy cyan)
+	draw_arc(Vector2.ZERO, 14.5, 0, TAU, 32, Color(0.4, 0.9, 1.0, 0.6), 2.0)

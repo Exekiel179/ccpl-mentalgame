@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://blauoxogndql1"]
 
-[ext_resource type="Script" uid="uid://bo8ft2goy3sat" path="res://ui/voice_calibration.gd" id="1_7wflv"]
+[ext_resource type="Script" uid="uid://du0w3a0gqrf42" path="res://ui/voice_calibration.gd" id="1_7wflv"]
 
 [node name="Node" type="Control" unique_id=1294256781]
 layout_mode = 3

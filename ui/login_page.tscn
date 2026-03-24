@@ -1,0 +1,164 @@
+[gd_scene load_steps=3 format=3 uid="uid://be5oqr6p3qlyx"]
+
+[ext_resource type="Script" uid="uid://be5oqr6p3qlyx" path="res://ui/login_page.gd" id="1_lp"]
+[ext_resource type="Script" uid="uid://brbui5n7g64b3" path="res://services/gemini_service.gd" id="2_gs"]
+
+[node name="LoginPage" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lp")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.988235, 0.960784, 0.921569, 1)
+
+[node name="BGSprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(640, 360)
+
+[node name="HeaderArt" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 100.0
+grow_horizontal = 2
+
+[node name="HeaderSprite" type="Sprite2D" parent="HeaderArt"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.5)
+position = Vector2(640, 50)
+
+[node name="Layout" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="IllustrationArea" type="Control" parent="Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IllustAnchor" type="Marker2D" parent="Layout/IllustrationArea"]
+unique_name_in_owner = true
+position = Vector2(320, 360)
+
+[node name="IllustSprite" type="Sprite2D" parent="Layout/IllustrationArea/IllustAnchor"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+
+[node name="RightContent" type="CenterContainer" parent="Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="Layout/RightContent"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="LoginCard" type="PanelContainer" parent="Layout/RightContent/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Layout/RightContent/VBox/LoginCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 35
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="Content" type="VBoxContainer" parent="Layout/RightContent/VBox/LoginCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Header" type="VBoxContainer" parent="Layout/RightContent/VBox/LoginCard/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "心理健康训练场"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.42, 0.4, 0.7)
+theme_override_font_sizes/font_size = 14
+text = "认知重构 · 遇见更好的自己 · 走向平衡"
+horizontal_alignment = 1
+
+[node name="Fields" type="VBoxContainer" parent="Layout/RightContent/VBox/LoginCard/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="UserEdit" type="LineEdit" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Fields"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+placeholder_text = "👤  用户名 / 邮箱"
+
+[node name="PassEdit" type="LineEdit" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Fields"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+placeholder_text = "🔒  密码"
+secret = true
+
+[node name="BtnLogin" type="Button" parent="Layout/RightContent/VBox/LoginCard/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_type_variation = &"FeatureButton"
+text = "📖  进入训练场 (登录)"
+
+[node name="Links" type="HBoxContainer" parent="Layout/RightContent/VBox/LoginCard/Margin/Content"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnRegister" type="Button" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Links"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.45, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+text = "注册账号"
+flat = true
+
+[node name="VSeparator" type="VSeparator" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Links"]
+layout_mode = 2
+
+[node name="BtnForgot" type="Button" parent="Layout/RightContent/VBox/LoginCard/Margin/Content/Links"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.45, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+text = "忘记密码"
+flat = true
+
+[node name="TipCard" type="PanelContainer" parent="Layout/RightContent/VBox"]
+layout_mode = 2
+theme_type_variation = &"TipCard"
+
+[node name="Label" type="Label" parent="Layout/RightContent/VBox/TipCard"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "💡 小贴士: 正面思考，从现在开始。探索认知重构的力量。"
+horizontal_alignment = 1
+
+[node name="GeminiBG" type="Node" parent="."]
+script = ExtResource("2_gs")
+
+[node name="GeminiIllust" type="Node" parent="."]
+script = ExtResource("2_gs")
+
+[node name="GeminiHeader" type="Node" parent="."]
+script = ExtResource("2_gs")

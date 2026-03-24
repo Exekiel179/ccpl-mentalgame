@@ -35,7 +35,7 @@ const PRESETS: Array[Dictionary] = [
 	},
 ]
 
-enum Track { PROCEDURAL, MENU, CARD_GAME }
+enum Track { PROCEDURAL, MENU, CARD_GAME, MAZE_GAME }
 
 var _player: AudioStreamPlayer
 var _playback: AudioStreamGeneratorPlayback
@@ -55,7 +55,8 @@ var _drift_max: float = 2.0
 
 var _tracks: Dictionary = {
 	Track.MENU: preload("res://assets/music/Chrono_Drift.mp3"),
-	Track.CARD_GAME: preload("res://assets/music/Harmonic_Drift.mp3")
+	Track.CARD_GAME: preload("res://assets/music/Harmonic_Drift.mp3"),
+	Track.MAZE_GAME: preload("res://assets/music/Harmonic_Drift.mp3") # Placeholder if only 2 tracks exist
 }
 
 func _ready() -> void:

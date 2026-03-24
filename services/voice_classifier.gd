@@ -7,12 +7,20 @@ extends RefCounted
 const FRAME_SIZE := 256
 const SAVE_PATH := "user://voice_templates_v3.dat"
 const MAX_TEMPLATES_PER_CLASS := 6
+const GLOBAL_FEATURE_COUNT := 20
+const FRAME_FEATURE_COUNT := 5
+
+func get_max_templates_per_class() -> int:
+	return MAX_TEMPLATES_PER_CLASS
 
 var _templates_fact: Array = []    # Array of {global: PackedFloat32Array, frames: Array}
 var _templates_thought: Array = []
 
 func has_templates() -> bool:
 	return _templates_fact.size() >= 1 and _templates_thought.size() >= 1
+
+func is_model_ready() -> bool:
+	return validate_model().is_empty()
 
 func get_fact_count() -> int:
 	return _templates_fact.size()
@@ -45,7 +53,38 @@ func remove_all_templates(category: String) -> void:
 	elif category == "thought":
 		_templates_thought.clear()
 
+func get_templates_copy() -> Dictionary:
+	return {
+		"fact": _duplicate_templates(_templates_fact),
+		"thought": _duplicate_templates(_templates_thought),
+	}
+
+func set_templates(templates: Dictionary) -> bool:
+	var fact_templates: Array = _sanitize_templates(templates.get("fact", []))
+	var thought_templates: Array = _sanitize_templates(templates.get("thought", []))
+	if not _validate_template_list(fact_templates, "fact").is_empty():
+		return false
+	if not _validate_template_list(thought_templates, "thought").is_empty():
+		return false
+	_templates_fact = _duplicate_templates(fact_templates)
+	_templates_thought = _duplicate_templates(thought_templates)
+	return true
+
+func validate_model() -> PackedStringArray:
+	var errors := PackedStringArray()
+	errors.append_array(_validate_template_list(_templates_fact, "fact"))
+	errors.append_array(_validate_template_list(_templates_thought, "thought"))
+	if _templates_fact.is_empty():
+		errors.append("fact templates missing")
+	if _templates_thought.is_empty():
+		errors.append("thought templates missing")
+	if has_templates() and abs(_templates_fact.size() - _templates_thought.size()) > 4:
+		errors.append("template counts imbalanced")
+	return errors
+
 func classify(frames: PackedVector2Array) -> Dictionary:
+	if not is_model_ready():
+		return {"result": "", "confidence": 0.0}
 	var t: Dictionary = _make_template(frames)
 	if t.is_empty():
 		return {"result": "", "confidence": 0.0}
@@ -99,10 +138,12 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 	# Convert to mono
 	var mono := PackedFloat32Array()
 	mono.resize(n)
-	for i in n:
+	for i in range(n):
 		mono[i] = (raw_frames[i].x + raw_frames[i].y) * 0.5
 	# Compute per-frame features
-	var num_fr := n / FRAME_SIZE
+	var num_fr: int = int(floor(float(n) / float(FRAME_SIZE)))
+	if num_fr < 3:
+		return {}
 	var f_energy := PackedFloat32Array(); f_energy.resize(num_fr)
 	var f_zcr := PackedFloat32Array(); f_zcr.resize(num_fr)
 	var f_hf := PackedFloat32Array(); f_hf.resize(num_fr)
@@ -111,7 +152,7 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 	var f_band_hi := PackedFloat32Array(); f_band_hi.resize(num_fr)
 	var f_peak := PackedFloat32Array(); f_peak.resize(num_fr)
 
-	for i in num_fr:
+	for i in range(num_fr):
 		var off: int = i * FRAME_SIZE
 		var energy := 0.0
 		var zc := 0
@@ -122,7 +163,7 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 		var hi_e := 0.0
 		var prev_s: float = mono[off]
 		# Simple 3-tap low-pass for band decomposition
-		for j in FRAME_SIZE:
+		for j in range(FRAME_SIZE):
 			var s: float = mono[off + j]
 			energy += s * s
 			if absf(s) > pk:
@@ -174,10 +215,8 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 
 	# ---- Global features (20-dim) ----
 	var g := PackedFloat32Array()
-	g.resize(20)
 	# Stats for each of 7 raw features: mean + std = 14
 	var arrays: Array = [f_energy, f_zcr, f_hf, f_band_lo, f_band_mid, f_band_hi, f_peak]
-	var gi := 0
 	for arr_idx in arrays.size():
 		var arr: PackedFloat32Array = arrays[arr_idx]
 		var mean := 0.0
@@ -188,17 +227,17 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 		for k in range(si, ei + 1):
 			std += (arr[k] - mean) * (arr[k] - mean)
 		std = sqrt(std / float(count))
-		g[gi] = mean; gi += 1
-		g[gi] = std; gi += 1
+		g.append(mean)
+		g.append(std)
 	# Temporal shape: first-half vs second-half energy ratio
-	var half := count / 2
+	var half: int = count / 2
 	var first_e := 0.0
 	var second_e := 0.0
 	for k in range(si, si + half):
 		first_e += f_energy[k]
 	for k in range(si + half, ei + 1):
 		second_e += f_energy[k]
-	g[14] = second_e / (first_e + 0.0001)
+	g.append(second_e / (first_e + 0.0001))
 	# First-half vs second-half ZCR ratio
 	var first_z := 0.0
 	var second_z := 0.0
@@ -206,7 +245,7 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 		first_z += f_zcr[k]
 	for k in range(si + half, ei + 1):
 		second_z += f_zcr[k]
-	g[15] = second_z / (first_z + 0.0001)
+	g.append(second_z / (first_z + 0.0001))
 	# Band ratio: hi / (lo + mid + 0.0001)
 	var sum_lo := 0.0
 	var sum_mid := 0.0
@@ -215,23 +254,27 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 		sum_lo += f_band_lo[k]
 		sum_mid += f_band_mid[k]
 		sum_hi += f_band_hi[k]
-	g[16] = sum_hi / (sum_lo + sum_mid + 0.0001)
-	g[17] = sum_mid / (sum_lo + 0.0001)
+	g.append(sum_hi / (sum_lo + sum_mid + 0.0001))
+	g.append(sum_mid / (sum_lo + 0.0001))
 	# Duration (normalized)
-	g[18] = float(count) / 50.0
+	g.append(float(count) / 50.0)
 	# Energy peak position (0-1)
 	var peak_idx := si
 	for k in range(si, ei + 1):
 		if f_energy[k] > f_energy[peak_idx]:
 			peak_idx = k
-	g[19] = float(peak_idx - si) / float(count)
+	g.append(float(peak_idx - si) / float(count))
+	if g.size() != GLOBAL_FEATURE_COUNT:
+		push_warning("[Classifier] Unexpected global feature size: %d" % g.size())
+		return {}
 
 	# ---- Normalize global features ----
-	# Each feature normalized by its magnitude for comparison
-	var g_norm := PackedFloat32Array()
-	g_norm.resize(20)
-	for k in 20:
-		g_norm[k] = g[k]
+	# Packed arrays can throw on indexed writes if their size gets out of sync,
+	# so duplicate the computed vector directly instead of copying element-by-element.
+	var g_norm: PackedFloat32Array = g.duplicate()
+	if g_norm.size() != GLOBAL_FEATURE_COUNT:
+		push_warning("[Classifier] Global feature vector size mismatch: %d" % g_norm.size())
+		return {}
 
 	# ---- Frame features (5-dim) for DTW ----
 	var maxes: Array = [0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
@@ -243,13 +286,16 @@ func _make_template(raw_frames: PackedVector2Array) -> Dictionary:
 		if f_peak[k] > maxes[4]: maxes[4] = f_peak[k]
 	var frame_feats: Array = []
 	for k in range(si, ei + 1):
-		var fv := PackedFloat32Array()
-		fv.resize(5)
-		fv[0] = f_energy[k] / maxes[0]
-		fv[1] = f_zcr[k] / maxes[1]
-		fv[2] = f_hf[k] / maxes[2]
-		fv[3] = f_band_hi[k] / maxes[3]
-		fv[4] = f_peak[k] / maxes[4]
+		var fv := PackedFloat32Array([
+			f_energy[k] / maxes[0],
+			f_zcr[k] / maxes[1],
+			f_hf[k] / maxes[2],
+			f_band_hi[k] / maxes[3],
+			f_peak[k] / maxes[4],
+		])
+		if fv.size() != FRAME_FEATURE_COUNT:
+			push_warning("[Classifier] Frame feature vector size mismatch: %d" % fv.size())
+			return {}
 		frame_feats.append(fv)
 
 	return {"global": g_norm, "frames": frame_feats}
@@ -274,7 +320,9 @@ const G_WEIGHTS: Array = [
 
 func _global_dist(a: PackedFloat32Array, b: PackedFloat32Array) -> float:
 	var d := 0.0
-	for k in 20:
+	if a.size() != GLOBAL_FEATURE_COUNT or b.size() != GLOBAL_FEATURE_COUNT:
+		return INF
+	for k in range(GLOBAL_FEATURE_COUNT):
 		var diff: float = a[k] - b[k]
 		d += diff * diff * float(G_WEIGHTS[k])
 	return sqrt(d)
@@ -288,7 +336,7 @@ func _dtw_multi(a: Array, b: Array) -> float:
 	var nb: int = b.size()
 	if na == 0 or nb == 0:
 		return INF
-	var band: int = maxi(3, (maxi(na, nb) + 9) / 10)
+	var band: int = maxi(3, int(ceil(float(maxi(na, nb)) / 10.0)))
 	var prev := PackedFloat32Array()
 	prev.resize(nb)
 	var curr := PackedFloat32Array()
@@ -318,7 +366,9 @@ func _dtw_multi(a: Array, b: Array) -> float:
 
 func _fv_dist(a: PackedFloat32Array, b: PackedFloat32Array) -> float:
 	var d := 0.0
-	for k in 5:
+	if a.size() != FRAME_FEATURE_COUNT or b.size() != FRAME_FEATURE_COUNT:
+		return INF
+	for k in range(FRAME_FEATURE_COUNT):
 		var diff: float = a[k] - b[k]
 		d += diff * diff * float(F_WEIGHTS[k])
 	return d
@@ -328,6 +378,9 @@ func _fv_dist(a: PackedFloat32Array, b: PackedFloat32Array) -> float:
 const VERSION := 3
 
 func save_templates() -> void:
+	if not is_model_ready():
+		push_warning("[Classifier] Refused to save invalid template model")
+		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
 		return
@@ -341,13 +394,17 @@ func _save_list(file: FileAccess, templates: Array) -> void:
 	file.store_32(templates.size())
 	for tmpl in templates:
 		var g: PackedFloat32Array = tmpl.global
-		for k in 20:
+		if g.size() != GLOBAL_FEATURE_COUNT:
+			continue
+		for k in range(GLOBAL_FEATURE_COUNT):
 			file.store_float(g[k])
 		var fr: Array = tmpl.frames
 		file.store_32(fr.size())
 		for fv in fr:
 			var v: PackedFloat32Array = fv
-			for k in 5:
+			if v.size() != FRAME_FEATURE_COUNT:
+				continue
+			for k in range(FRAME_FEATURE_COUNT):
 				file.store_float(v[k])
 
 func load_templates() -> bool:
@@ -357,34 +414,82 @@ func load_templates() -> bool:
 	var ver: int = file.get_32()
 	if ver != VERSION:
 		file.close()
-		return false
-	_templates_fact = _load_list(file)
-	_templates_thought = _load_list(file)
-	file.close()
-	print("[Classifier] Loaded %d+%d" % [_templates_fact.size(), _templates_thought.size()])
-	# Detect contaminated model (severe imbalance = bad calibration run)
-	if abs(_templates_fact.size() - _templates_thought.size()) > 4:
-		push_warning("[Classifier] Templates severely imbalanced (%d vs %d), forcing recalibration" % [
-			_templates_fact.size(), _templates_thought.size()])
 		clear_templates()
 		return false
-	return has_templates()
+	var fact_templates: Array = _load_list(file)
+	var thought_templates: Array = _load_list(file)
+	file.close()
+	if not set_templates({"fact": fact_templates, "thought": thought_templates}):
+		push_warning("[Classifier] Loaded template file is invalid, forcing recalibration")
+		clear_templates()
+		return false
+	print("[Classifier] Loaded %d+%d" % [_templates_fact.size(), _templates_thought.size()])
+	if not is_model_ready():
+		push_warning("[Classifier] Templates failed readiness validation, forcing recalibration")
+		clear_templates()
+		return false
+	return true
 
 func _load_list(file: FileAccess) -> Array:
 	var result: Array = []
 	var count: int = file.get_32()
 	for i in count:
 		var g := PackedFloat32Array()
-		g.resize(20)
-		for k in 20:
+		g.resize(GLOBAL_FEATURE_COUNT)
+		for k in range(GLOBAL_FEATURE_COUNT):
 			g[k] = file.get_float()
 		var nf: int = file.get_32()
 		var fr: Array = []
 		for j in nf:
 			var fv := PackedFloat32Array()
-			fv.resize(5)
-			for k in 5:
+			fv.resize(FRAME_FEATURE_COUNT)
+			for k in range(FRAME_FEATURE_COUNT):
 				fv[k] = file.get_float()
 			fr.append(fv)
 		result.append({"global": g, "frames": fr})
 	return result
+
+func _duplicate_templates(templates: Array) -> Array:
+	var copies: Array = []
+	for tmpl in templates:
+		if typeof(tmpl) != TYPE_DICTIONARY:
+			continue
+		var global_vec: PackedFloat32Array = tmpl.get("global", PackedFloat32Array())
+		var frames: Array = tmpl.get("frames", [])
+		var frame_copies: Array = []
+		for fv in frames:
+			if fv is PackedFloat32Array:
+				frame_copies.append((fv as PackedFloat32Array).duplicate())
+		copies.append({
+			"global": global_vec.duplicate(),
+			"frames": frame_copies,
+		})
+	return copies
+
+func _sanitize_templates(raw_templates: Variant) -> Array:
+	if typeof(raw_templates) != TYPE_ARRAY:
+		return []
+	return _duplicate_templates(raw_templates as Array)
+
+func _validate_template_list(templates: Array, label: String) -> PackedStringArray:
+	var errors := PackedStringArray()
+	for index in range(templates.size()):
+		var tmpl: Variant = templates[index]
+		if typeof(tmpl) != TYPE_DICTIONARY:
+			errors.append("%s template %d is not a dictionary" % [label, index])
+			continue
+		var global_vec: PackedFloat32Array = tmpl.get("global", PackedFloat32Array())
+		if global_vec.size() != GLOBAL_FEATURE_COUNT:
+			errors.append("%s template %d global size mismatch" % [label, index])
+		var frames: Variant = tmpl.get("frames", [])
+		if typeof(frames) != TYPE_ARRAY or (frames as Array).is_empty():
+			errors.append("%s template %d frames missing" % [label, index])
+			continue
+		for frame_index in range((frames as Array).size()):
+			var fv: Variant = (frames as Array)[frame_index]
+			if not (fv is PackedFloat32Array):
+				errors.append("%s template %d frame %d invalid" % [label, index, frame_index])
+				continue
+			if (fv as PackedFloat32Array).size() != FRAME_FEATURE_COUNT:
+				errors.append("%s template %d frame %d size mismatch" % [label, index, frame_index])
+	return errors
