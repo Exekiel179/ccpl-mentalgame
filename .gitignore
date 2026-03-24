@@ -4,3 +4,8 @@
 
 # Secrets
 .env
+
+# Tool-specific directories
+.claude/
+.gemini/
+.mcp.json
