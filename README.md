@@ -33,7 +33,7 @@ CCPL-MentalGame is an interactive educational and therapeutic game designed to h
    - Add your Gemini API credentials:
      ```env
      GEMINI_API_KEY=your_api_key_here
-     GEMINI_API_ENDPOINT=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent
+     GEMINI_API_ENDPOINT=your_api_endpoint_here
      ```
 3. **Open with Godot**:
    - Import `project.godot` into the Godot Engine 4.x editor.
